@@ -10,6 +10,9 @@ function renderFeedback(user) {
   } else if (user.role === 'adviser') {
     const groups = MockDB.getGroupsByAdviserId(user.id).map(g => g.id);
     feedbacks = MockDB.getAllFeedback().filter(f => groups.includes(f.groupId));
+  } else if (user.role === 'panelist') {
+    const groups = Array.isArray(user.assignedGroups) ? user.assignedGroups : [];
+    feedbacks = MockDB.getAllFeedback().filter(f => groups.includes(f.groupId));
   } else {
     feedbacks = MockDB.getAllFeedback();
   }

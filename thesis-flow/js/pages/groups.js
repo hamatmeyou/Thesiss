@@ -9,6 +9,9 @@ function renderGroups(user) {
     groups = g ? [g] : [];
   } else if (user.role === 'adviser') {
     groups = MockDB.getGroupsByAdviserId(user.id);
+  } else if (user.role === 'panelist') {
+    const assignedIds = Array.isArray(user.assignedGroups) ? user.assignedGroups : [];
+    groups = assignedIds.map(id => MockDB.getGroupById(id)).filter(Boolean);
   } else {
     groups = MockDB.getAllGroups();
   }
@@ -18,14 +21,14 @@ function renderGroups(user) {
   content.innerHTML = `
     <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
       <div>
-        <h2>👥 ${user.role === 'student' ? 'My Group' : user.role === 'adviser' ? 'My Groups' : 'All Groups'}</h2>
-        <p>${user.role === 'student' ? 'Your assigned thesis group and details.' : 'Manage and monitor thesis groups.'}</p>
+        <h2>👥 ${user.role === 'student' ? 'My Group' : user.role === 'adviser' ? 'My Groups' : user.role === 'panelist' ? 'Assigned Groups' : 'All Groups'}</h2>
+        <p>${user.role === 'student' ? 'Your assigned thesis group and details.' : user.role === 'panelist' ? 'Read-only monitoring for panel-assigned groups.' : 'Manage and monitor thesis groups.'}</p>
       </div>
       ${canCreate ? `<button class="btn-primary btn-sm" onclick="openCreateGroupModal()">＋ New Group</button>` : ''}
     </div>
 
     ${groups.length === 0
-      ? `<div class="empty-state"><div class="empty-icon">👥</div><h3>No Groups Found</h3><p>${user.role === 'student' ? 'You have not been assigned to a thesis group yet.' : 'No groups assigned to you.'}</p></div>`
+      ? `<div class="empty-state"><div class="empty-icon">👥</div><h3>No Groups Found</h3><p>${user.role === 'student' ? 'You have not been assigned to a thesis group yet.' : user.role === 'panelist' ? 'No groups are assigned to you as panelist yet.' : 'No groups assigned to you.'}</p></div>`
       : groups.map(g => renderGroupCard(g, user)).join('')}
   `;
 }

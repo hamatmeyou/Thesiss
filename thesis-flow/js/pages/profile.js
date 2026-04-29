@@ -57,14 +57,14 @@ function renderProfile(user) {
                 </select>
               </div>
             </div>
-          ` : user.role === 'adviser' ? `
+          ` : user.role === 'adviser' || user.role === 'panelist' || user.role === 'capstone_head' || user.role === 'student_assistant' ? `
             <div class="form-group">
               <label>Department</label>
               <input type="text" id="prof-dept" value="${user.department || ''}" />
             </div>
             <div class="form-group">
-              <label>Specialization</label>
-              <input type="text" id="prof-spec" value="${user.specialization || ''}" />
+              <label>${user.role === 'adviser' ? 'Specialization' : 'Position'}</label>
+              <input type="text" id="prof-spec" value="${user.role === 'adviser' ? (user.specialization || '') : (user.position || '')}" />
             </div>
           ` : ''}
 
@@ -96,6 +96,9 @@ function updateProfile() {
   } else if (user.role === 'adviser') {
     user.department = document.getElementById('prof-dept').value.trim();
     user.specialization = document.getElementById('prof-spec').value.trim();
+  } else if (user.role === 'panelist' || user.role === 'capstone_head' || user.role === 'student_assistant') {
+    user.department = document.getElementById('prof-dept').value.trim();
+    user.position = document.getElementById('prof-spec').value.trim();
   }
   
   // Update avatar

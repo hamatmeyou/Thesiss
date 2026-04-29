@@ -12,7 +12,10 @@ function renderUsers(user) {
 
   const students = allUsers.filter(u => u.role === 'student');
   const advisers = allUsers.filter(u => u.role === 'adviser');
+  const panelists = allUsers.filter(u => u.role === 'panelist');
   const admins   = allUsers.filter(u => u.role === 'admin');
+  const heads = allUsers.filter(u => u.role === 'capstone_head');
+  const assistants = allUsers.filter(u => u.role === 'student_assistant');
 
   content.innerHTML = `
     <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
@@ -26,7 +29,10 @@ function renderUsers(user) {
     <div style="display:flex;gap:10px;margin-bottom:20px;">
       <button class="btn-sm btn-primary" id="btn-tab-students" onclick="switchUserTab('students')">Students (${students.length})</button>
       <button class="btn-sm btn-outline" id="btn-tab-advisers" onclick="switchUserTab('advisers')">Faculty (${advisers.length})</button>
+      <button class="btn-sm btn-outline" id="btn-tab-panelists" onclick="switchUserTab('panelists')">Panelists (${panelists.length})</button>
       <button class="btn-sm btn-outline" id="btn-tab-admins" onclick="switchUserTab('admins')">Admins (${admins.length})</button>
+      <button class="btn-sm btn-outline" id="btn-tab-heads" onclick="switchUserTab('heads')">Capstone Heads (${heads.length})</button>
+      <button class="btn-sm btn-outline" id="btn-tab-assistants" onclick="switchUserTab('assistants')">Student Assistants (${assistants.length})</button>
     </div>
 
     <div class="card" id="users-container">
@@ -36,12 +42,12 @@ function renderUsers(user) {
 
   // Store globally for tabbing
   window._allUsers = {
-    students, advisers, admins
+    students, advisers, panelists, admins, heads, assistants
   };
 }
 
 function switchUserTab(tab) {
-  ['students', 'advisers', 'admins'].forEach(t => {
+  ['students', 'advisers', 'panelists', 'admins', 'heads', 'assistants'].forEach(t => {
     const btn = document.getElementById('btn-tab-' + t);
     if (t === tab) {
       btn.classList.add('btn-primary');
@@ -87,7 +93,7 @@ function renderUsersTable(users) {
               </td>
               <td>
                 <div style="font-size:0.85rem;">
-                  ${u.role === 'student' ? (u.program || '—') : (u.department || '—')}
+                  ${u.role === 'student' ? (u.program || '—') : (u.position || u.department || '—')}
                 </div>
                 ${u.role === 'student' && u.groupId ? `<div style="font-size:0.75rem;color:var(--primary-2);">Has Group</div>` : ''}
               </td>
@@ -112,7 +118,10 @@ function openAddUserModal() {
         <select id="nu-role">
           <option value="student">Student</option>
           <option value="adviser">Faculty Adviser</option>
+          <option value="panelist">Panelist</option>
           <option value="admin">Admin</option>
+          <option value="capstone_head">Capstone Head</option>
+          <option value="student_assistant">Student Assistant</option>
         </select>
       </div>
       <div class="form-group"><label>Year Level (for Students)</label>
@@ -153,6 +162,9 @@ function createUser() {
     id: MockDB.genId('u'),
     name, email, password: pass, role,
     yearLevel: role === 'student' ? year : null,
+    assignedGroups: [],
+    profile: {},
+    status: 'active',
     groupId: null,
     avatar: name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2),
     createdAt: new Date().toISOString().split('T')[0]

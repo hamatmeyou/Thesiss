@@ -12,7 +12,7 @@ function bootApp() {
 
   // Populate sidebar user info
   document.getElementById('sidebar-name').textContent   = user.name;
-  document.getElementById('sidebar-role').textContent   = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+  document.getElementById('sidebar-role').textContent   = formatRoleLabel(user.role);
   document.getElementById('sidebar-avatar').textContent = user.avatar || user.name[0];
 
   // Notification badge
@@ -28,6 +28,18 @@ function bootApp() {
   navigateTo('dashboard');
 
   showToast(`Welcome back, ${user.name.split(' ')[0]}! 👋`, 'success');
+}
+
+function formatRoleLabel(role) {
+  const labels = {
+    student: 'Student',
+    adviser: 'Adviser',
+    panelist: 'Panelist',
+    admin: 'Admin',
+    capstone_head: 'Capstone Head',
+    student_assistant: 'Student Assistant'
+  };
+  return labels[role] || role;
 }
 
 // On page load

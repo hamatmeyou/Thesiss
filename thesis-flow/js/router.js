@@ -17,6 +17,13 @@ const ROUTES = {
     { id: 'feedback',    label: 'Feedback',     icon: '💬' },
     { id: 'profile',     label: 'My Profile',   icon: '👤' },
   ],
+  panelist: [
+    { id: 'dashboard',   label: 'Dashboard',   icon: '🏠' },
+    { id: 'groups',      label: 'Assigned Groups', icon: '👥' },
+    { id: 'submissions', label: 'Submissions', icon: '📄' },
+    { id: 'feedback',    label: 'Feedback',    icon: '💬' },
+    { id: 'profile',     label: 'My Profile',  icon: '👤' },
+  ],
   admin: [
     { id: 'dashboard',   label: 'Dashboard',   icon: '🏠' },
     { id: 'groups',      label: 'All Groups',   icon: '👥' },
@@ -24,6 +31,21 @@ const ROUTES = {
     { id: 'schedules',   label: 'Schedules',    icon: '📅' },
     { id: 'users',       label: 'Users',        icon: '🛡️' },
     { id: 'profile',     label: 'My Profile',   icon: '👤' },
+  ],
+  capstone_head: [
+    { id: 'dashboard',   label: 'Dashboard',   icon: '🏠' },
+    { id: 'groups',      label: 'All Groups',  icon: '👥' },
+    { id: 'submissions', label: 'Submissions', icon: '📄' },
+    { id: 'schedules',   label: 'Schedules',   icon: '📅' },
+    { id: 'feedback',    label: 'Feedback',    icon: '💬' },
+    { id: 'profile',     label: 'My Profile',  icon: '👤' },
+  ],
+  student_assistant: [
+    { id: 'dashboard',   label: 'Dashboard',   icon: '🏠' },
+    { id: 'groups',      label: 'Groups',      icon: '👥' },
+    { id: 'submissions', label: 'Submissions', icon: '📄' },
+    { id: 'feedback',    label: 'Feedback',    icon: '💬' },
+    { id: 'profile',     label: 'My Profile',  icon: '👤' },
   ]
 };
 
@@ -51,11 +73,16 @@ function updateSidebarActive(pageId) {
 
 function navigateTo(pageId) {
   currentPage = pageId;
+  const user    = getCurrentUser();
+  const routes  = ROUTES[user.role] || ROUTES.student;
+  const canAccess = routes.some(r => r.id === pageId);
+  if (!canAccess) {
+    currentPage = 'dashboard';
+    pageId = 'dashboard';
+  }
   updateSidebarActive(pageId);
 
   const titleEl = document.getElementById('topbar-title');
-  const user    = getCurrentUser();
-  const routes  = ROUTES[user.role] || ROUTES.student;
   const route   = routes.find(r => r.id === pageId);
   if (titleEl && route) titleEl.textContent = route.label;
 

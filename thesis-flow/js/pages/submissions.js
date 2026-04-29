@@ -9,11 +9,20 @@ function renderSubmissions(user) {
     subs = group ? MockDB.getSubmissionsByGroup(group.id) : [];
   } else if (user.role === 'adviser') {
     subs = MockDB.getSubmissionsForAdviser(user.id);
+  } else if (user.role === 'panelist') {
+    const assignedGroupIds = Array.isArray(user.assignedGroups) ? user.assignedGroups : [];
+    subs = MockDB.getAllSubmissions().filter(s => assignedGroupIds.includes(s.groupId));
   } else {
     subs = MockDB.getAllSubmissions();
   }
 
   const canSubmit = user.role === 'student';
+  const group = user.role === 'student' ? MockDB.getGroupByUserId(user.id) : null;
+  const submissionWindow = group ? getSubmissionWindowStatus(group) : { allowed: true, reason: '' };
+  const canManageOverride = user.role === 'adviser' || user.role === 'admin';
+  const manageableGroups = canManageOverride
+    ? (user.role === 'admin' ? MockDB.getAllGroups() : MockDB.getGroupsByAdviserId(user.id))
+    : [];
 
   const filterHtml = `
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
@@ -29,6 +38,8 @@ function renderSubmissions(user) {
       </div>
       ${canSubmit ? `<button class="btn-primary btn-sm" onclick="openSubmitModal()">＋ New Submission</button>` : ''}
     </div>
+    ${canSubmit && group ? renderSubmissionWindowNotice(submissionWindow, group) : ''}
+    ${canManageOverride ? renderOverrideManager(manageableGroups) : ''}
     ${filterHtml}
     <div id="subs-list">
       ${renderSubsList(subs, user)}
@@ -163,6 +174,14 @@ function toggleHistory(threadId) {
 }
 
 function openResubmitModal(threadId, title, type) {
+  const user = getCurrentUser();
+  const group = MockDB.getGroupByUserId(user.id);
+  const submissionWindow = group ? getSubmissionWindowStatus(group) : { allowed: true, reason: '' };
+  if (!submissionWindow.allowed) {
+    showToast(submissionWindow.reason || 'Submission period is closed for your current stage.', 'warning');
+    return;
+  }
+
   openModal(`
     <div class="modal-form">
       <div class="form-group"><label>Document Title</label><input type="text" id="sub-title" value="${title}" readonly style="background:var(--bg-2);" /></div>
@@ -183,6 +202,7 @@ function openResubmitModal(threadId, title, type) {
 function submitNewVersion(threadId) {
   const user  = getCurrentUser();
   const group = MockDB.getGroupByUserId(user.id);
+  const submissionWindow = group ? getSubmissionWindowStatus(group) : { allowed: true, reason: '' };
   const title = document.getElementById('sub-title').value;
   const type  = document.getElementById('sub-type').value;
   const desc  = document.getElementById('sub-desc').value.trim();
@@ -190,6 +210,7 @@ function submitNewVersion(threadId) {
   const selectedFile = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
 
   if (!desc) { showToast('Please describe the changes.', 'warning'); return; }
+  if (!submissionWindow.allowed) { showToast(submissionWindow.reason, 'warning'); return; }
   if (!selectedFile) { showToast('Please upload a file first.', 'warning'); return; }
 
   MockDB.addSubmission({
@@ -257,7 +278,9 @@ function submitFeedback(subId, groupId) {
 function openSubmitModal() {
   const user  = getCurrentUser();
   const group = MockDB.getGroupByUserId(user.id);
+  const submissionWindow = group ? getSubmissionWindowStatus(group) : { allowed: true, reason: '' };
   if (!group) { showToast('You are not in a group yet.', 'warning'); return; }
+  if (!submissionWindow.allowed) { showToast(submissionWindow.reason, 'warning'); return; }
 
   openModal(`
     <div class="modal-form">
@@ -281,6 +304,9 @@ function openSubmitModal() {
 }
 
 function submitDocument(groupId) {
+  const user = getCurrentUser();
+  const group = MockDB.getGroupById(groupId);
+  const submissionWindow = group ? getSubmissionWindowStatus(group) : { allowed: true, reason: '' };
   const title = document.getElementById('sub-title').value.trim();
   const type  = document.getElementById('sub-type').value;
   const desc  = document.getElementById('sub-desc').value.trim();
@@ -288,6 +314,7 @@ function submitDocument(groupId) {
   const selectedFile = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
 
   if (!title || !desc) { showToast('Please fill in all fields.', 'warning'); return; }
+  if (!submissionWindow.allowed) { showToast(submissionWindow.reason, 'warning'); return; }
   if (!selectedFile) { showToast('Please upload a file first.', 'warning'); return; }
 
   MockDB.addSubmission({
@@ -298,7 +325,7 @@ function submitDocument(groupId) {
     fileUrl: '#',
     fileName: selectedFile.name,
     fileSize: formatUploadedFileSize(selectedFile.size),
-    submittedBy: getCurrentUser().id,
+    submittedBy: user.id,
     submittedAt: new Date().toISOString().split('T')[0],
     reviewedAt: null,
     reviewedBy: null
@@ -306,7 +333,7 @@ function submitDocument(groupId) {
 
   closeModal();
   showToast('Document submitted for review!', 'success');
-  renderSubmissions(getCurrentUser());
+  renderSubmissions(user);
 }
 
 function handleSubmissionFileUpload(event) {
@@ -329,4 +356,203 @@ function formatUploadedFileSize(sizeInBytes) {
   if (sizeInMB >= 1) return `${sizeInMB.toFixed(2)} MB`;
   const sizeInKB = sizeInBytes / 1024;
   return `${Math.max(sizeInKB, 0.1).toFixed(1)} KB`;
+}
+
+function renderOverrideManager(groups) {
+  if (!groups.length) return '';
+  return `
+    <div class="card" style="margin-bottom:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div>
+          <div style="font-family:'Outfit',sans-serif;font-size:1rem;font-weight:700;">⏰ Late Submission Override</div>
+          <div style="font-size:0.82rem;color:var(--text-2);margin-top:4px;">Allow late submissions for selected groups with a required reason.</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-top:14px;">
+        ${groups.map(g => {
+          const override = g.submissionOverride || { enabled: false, reason: '' };
+          return `
+            <div style="background:var(--bg-2);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:12px;">
+              <div style="font-size:0.82rem;font-weight:600;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${g.title}</div>
+              <div style="font-size:0.76rem;color:${override.enabled ? 'var(--warning)' : 'var(--text-3)'};margin-bottom:8px;">
+                ${override.enabled ? `Override ON${override.reason ? `: ${override.reason}` : ''}` : 'Override OFF'}
+              </div>
+              <button class="btn-sm ${override.enabled ? 'btn-danger-sm' : 'btn-outline'}" onclick="openSubmissionOverrideModal('${g.id}')">
+                ${override.enabled ? 'Disable Override' : 'Enable Override'}
+              </button>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function openSubmissionOverrideModal(groupId) {
+  const user = getCurrentUser();
+  const group = MockDB.getGroupById(groupId);
+  if (!group || !user) return;
+  if (user.role === 'adviser' && group.adviserId !== user.id) {
+    showToast('You can only manage override for your assigned groups.', 'warning');
+    return;
+  }
+
+  const current = group.submissionOverride || { enabled: false, reason: '' };
+  const actionLabel = current.enabled ? 'Disable' : 'Enable';
+  openModal(`
+    <div class="modal-form">
+      <div style="font-size:0.85rem;color:var(--text-2);">${group.title}</div>
+      <div class="form-group">
+        <label>Reason ${current.enabled ? '(optional when disabling)' : '(required)'}</label>
+        <textarea id="override-reason" placeholder="e.g., Approved extension due to approved consultation request.">${current.reason || ''}</textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-sm btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn-sm ${current.enabled ? 'btn-danger-sm' : 'btn-primary'}" onclick="saveSubmissionOverride('${group.id}', ${current.enabled ? 'false' : 'true'})">${actionLabel} Override</button>
+      </div>
+    </div>`, `${actionLabel} Late Submission Override`);
+}
+
+function saveSubmissionOverride(groupId, enableOverride) {
+  const user = getCurrentUser();
+  const group = MockDB.getGroupById(groupId);
+  if (!group || !user) return;
+  if (user.role === 'adviser' && group.adviserId !== user.id) {
+    showToast('You can only manage override for your assigned groups.', 'warning');
+    return;
+  }
+
+  const reason = (document.getElementById('override-reason')?.value || '').trim();
+  if (enableOverride && !reason) {
+    showToast('Please provide a reason before enabling override.', 'warning');
+    return;
+  }
+
+  if (typeof MockDB.setGroupSubmissionOverride !== 'function') {
+    showToast('Override feature is unavailable.', 'error');
+    return;
+  }
+
+  MockDB.setGroupSubmissionOverride(groupId, {
+    enabled: enableOverride,
+    reason: enableOverride ? reason : '',
+    updatedBy: user.id,
+    updatedAt: new Date().toISOString()
+  });
+
+  if (enableOverride) {
+    group.memberIds.forEach(studentId => {
+      MockDB.addNotification({
+        id: MockDB.genId('n'),
+        userId: studentId,
+        title: 'Late Submission Override Enabled',
+        message: `${user.name} approved a late submission override for your group.`,
+        type: 'submission',
+        read: false,
+        createdAt: new Date().toISOString(),
+        link: 'submissions'
+      });
+    });
+
+    if (user.role === 'adviser') {
+      const admins = typeof MockDB.getUsersByRole === 'function' ? MockDB.getUsersByRole('admin') : [];
+      admins.forEach(admin => {
+        MockDB.addNotification({
+          id: MockDB.genId('n'),
+          userId: admin.id,
+          title: 'Adviser Enabled Late Submission',
+          message: `${user.name} enabled late submission for group ${group.title.slice(0, 40)}... Reason: ${reason}`,
+          type: 'submission',
+          read: false,
+          createdAt: new Date().toISOString(),
+          link: 'submissions'
+        });
+      });
+    }
+  }
+
+  closeModal();
+  showToast(enableOverride ? 'Late submission override enabled.' : 'Late submission override disabled.', 'success');
+  renderSubmissions(user);
+}
+
+function getSubmissionWindowStatus(group) {
+  if (!group || !group.progress || !Array.isArray(group.progress.stages)) {
+    return { allowed: true, reason: '' };
+  }
+
+  const override = group.submissionOverride || { enabled: false, reason: '' };
+  if (override.enabled) {
+    return {
+      allowed: true,
+      reason: '',
+      overridden: true,
+      overrideReason: override.reason || 'Late submission approved by adviser/admin.'
+    };
+  }
+
+  const currentStage = (group.progress.stages[group.progress.currentStage] || '').toLowerCase();
+  const timeline = typeof MockDB.getAllTimeline === 'function' ? MockDB.getAllTimeline() : [];
+  if (!timeline.length) return { allowed: true, reason: '' };
+
+  const normalize = (value) => (value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const normalizedStage = normalize(currentStage);
+
+  const stageKeywordMap = [
+    { match: ['titleproposal', 'proposal'], keywords: ['proposal'] },
+    { match: ['chapter1', 'intro', 'introduction'], keywords: ['chapter1'] },
+    { match: ['chapter2', 'rrl', 'reviewofrelatedliterature'], keywords: ['chapter2'] },
+    { match: ['chapter3', 'methodology'], keywords: ['chapter3'] },
+    { match: ['finalmanuscript', 'finaldefense', 'chapter4', 'chapter5', 'final'], keywords: ['final'] }
+  ];
+
+  const matchingRule = stageKeywordMap.find(rule => rule.match.some(token => normalizedStage.includes(token)));
+  const requiredTimelineItem = matchingRule
+    ? timeline.find(t => {
+        const normalizedTitle = normalize(t.title);
+        return matchingRule.keywords.some(keyword => normalizedTitle.includes(keyword));
+      })
+    : null;
+
+  if (!requiredTimelineItem || !requiredTimelineItem.date) {
+    return { allowed: true, reason: '' };
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const deadline = new Date(requiredTimelineItem.date);
+  deadline.setHours(23, 59, 59, 999);
+
+  if (today.getTime() <= deadline.getTime()) {
+    return { allowed: true, reason: '' };
+  }
+
+  return {
+    allowed: false,
+    reason: `Submission closed: ${requiredTimelineItem.title} deadline (${formatDate(requiredTimelineItem.date)}) has passed.`
+  };
+}
+
+function renderSubmissionWindowNotice(submissionWindow, group) {
+  const stageLabel = group && group.progress && Array.isArray(group.progress.stages)
+    ? (group.progress.stages[group.progress.currentStage] || 'Current Stage')
+    : 'Current Stage';
+
+  if (submissionWindow.allowed) {
+    const extra = submissionWindow.overridden
+      ? `<div style="margin-top:5px;color:var(--warning);font-size:0.8rem;">⚠ Late submission override is active: ${submissionWindow.overrideReason}</div>`
+      : '';
+    return `
+      <div class="card" style="padding:12px 14px;margin-bottom:16px;border-color:rgba(111,190,115,0.35);">
+        <div style="font-size:0.84rem;color:var(--success);font-weight:600;">✅ Submission allowed for stage: ${stageLabel}</div>
+        ${extra}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="card" style="padding:12px 14px;margin-bottom:16px;border-color:rgba(248,113,113,0.4);">
+      <div style="font-size:0.84rem;color:var(--danger);font-weight:600;">❌ ${submissionWindow.reason}</div>
+    </div>
+  `;
 }

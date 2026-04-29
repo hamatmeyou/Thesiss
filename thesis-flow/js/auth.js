@@ -86,6 +86,9 @@ function handleRegister(e) {
     id: MockDB.genId('u'),
     name, email, password, role,
     groupId: null,
+    assignedGroups: [],
+    profile: {},
+    status: 'active',
     avatar: name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2),
     createdAt: new Date().toISOString().split('T')[0]
   };

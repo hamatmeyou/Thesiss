@@ -94,6 +94,62 @@ function renderDashboard(user) {
         </div>
       </div>`;
 
+  } else if (user.role === 'capstone_head') {
+    const allGroups = MockDB.getAllGroups();
+    const allSubs = MockDB.getAllSubmissions();
+    const pendingSubs = allSubs.filter(s => s.status === 'Pending').length;
+    const allSchedules = MockDB.getAllSchedules();
+    const upcomingSchedules = allSchedules.filter(s => s.status === 'Upcoming').length;
+
+    statsCards = `
+      <div class="stats-grid">
+        <div class="stat-card"><span class="stat-icon">👥</span><div class="stat-info"><div class="stat-value">${allGroups.length}</div><div class="stat-label">All Groups</div></div></div>
+        <div class="stat-card"><span class="stat-icon">📄</span><div class="stat-info"><div class="stat-value">${allSubs.length}</div><div class="stat-label">All Submissions</div></div></div>
+        <div class="stat-card"><span class="stat-icon">⏳</span><div class="stat-info"><div class="stat-value">${pendingSubs}</div><div class="stat-label">Pending Reviews</div></div></div>
+        <div class="stat-card"><span class="stat-icon">📅</span><div class="stat-info"><div class="stat-value">${upcomingSchedules}</div><div class="stat-label">Upcoming Schedules</div></div></div>
+      </div>`;
+
+    mainSection = `
+      <div class="card">
+        <div class="card-header"><div class="card-title">🎓 Capstone Monitoring Overview</div><button class="btn-sm btn-outline" onclick="navigateTo('groups')">View All Groups</button></div>
+        <p style="font-size:0.88rem;color:var(--text-2);">You have full monitoring visibility across thesis progress, submissions, and schedules.</p>
+      </div>`;
+
+  } else if (user.role === 'student_assistant') {
+    const allGroups = MockDB.getAllGroups();
+    const allSubs = MockDB.getAllSubmissions();
+    const pendingSubs = allSubs.filter(s => s.status === 'Pending').length;
+    const allSchedules = MockDB.getAllSchedules();
+    const upcomingSchedules = allSchedules.filter(s => s.status === 'Upcoming').length;
+    const recentGroups = allGroups.slice(0, 5);
+
+    statsCards = `
+      <div class="stats-grid">
+        <div class="stat-card"><span class="stat-icon">👥</span><div class="stat-info"><div class="stat-value">${allGroups.length}</div><div class="stat-label">All Groups</div></div></div>
+        <div class="stat-card"><span class="stat-icon">📄</span><div class="stat-info"><div class="stat-value">${allSubs.length}</div><div class="stat-label">Submissions Logged</div></div></div>
+        <div class="stat-card"><span class="stat-icon">⏳</span><div class="stat-info"><div class="stat-value">${pendingSubs}</div><div class="stat-label">Pending Reviews</div></div></div>
+        <div class="stat-card"><span class="stat-icon">📅</span><div class="stat-info"><div class="stat-value">${upcomingSchedules}</div><div class="stat-label">Upcoming Schedules</div></div></div>
+      </div>`;
+
+    mainSection = `
+      <div class="card">
+        <div class="card-header"><div class="card-title">📋 Group Monitoring Snapshot</div><button class="btn-sm btn-outline" onclick="navigateTo('groups')">Open Groups</button></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Group</th><th>Phase</th><th>Status</th><th>Adviser</th></tr></thead>
+            <tbody>
+              ${recentGroups.map(g => `
+                <tr>
+                  <td><div style="font-weight:500;max-width:280px;">${g.title}</div><div style="font-size:0.78rem;color:var(--text-3);margin-top:2px;">${g.program}</div></td>
+                  <td>${g.phase}</td>
+                  <td>${statusBadge(g.status)}</td>
+                  <td>${g.adviserId ? userName(g.adviserId) : '<span style="color:var(--text-3);">Unassigned</span>'}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+
   } else {
     // Student
     const group   = MockDB.getGroupByUserId(user.id);

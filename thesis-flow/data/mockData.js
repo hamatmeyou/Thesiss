@@ -100,6 +100,45 @@ const DB = {
       groupId: null,
       avatar: 'AU',
       createdAt: '2025-07-01'
+    },
+    {
+      id: 'u9',
+      name: 'Dr. Teresa Valdez',
+      email: 'capstone.head@plmun.edu.ph',
+      password: 'demo1234',
+      role: 'capstone_head',
+      groupId: null,
+      avatar: 'TV',
+      position: 'Capstone Head',
+      assignedGroups: [],
+      status: 'active',
+      createdAt: '2025-07-01'
+    },
+    {
+      id: 'u10',
+      name: 'Mark Dela Pena',
+      email: 'student.assistant@plmun.edu.ph',
+      password: 'demo1234',
+      role: 'student_assistant',
+      groupId: null,
+      avatar: 'MP',
+      position: 'Capstone Student Assistant',
+      assignedGroups: [],
+      status: 'active',
+      createdAt: '2025-07-01'
+    },
+    {
+      id: 'u11',
+      name: 'Prof. Jaime Castillo',
+      email: 'panelist@plmun.edu.ph',
+      password: 'demo1234',
+      role: 'panelist',
+      groupId: null,
+      avatar: 'JC',
+      department: 'College of Computing',
+      assignedGroups: ['g1', 'g2'],
+      status: 'active',
+      createdAt: '2025-07-01'
     }
   ],
 
@@ -346,6 +385,58 @@ const DB = {
     }
   ],
 
+  // ── GLOBAL TIMELINE (Admin-controlled) ─────────────────────
+  timeline: [
+    {
+      id: 'tl1',
+      title: 'Proposal Deadline',
+      description: 'All thesis groups must submit their approved proposal documents.',
+      date: '2025-10-31',
+      type: 'Deadline',
+      createdBy: 'u8'
+    },
+    {
+      id: 'tl2',
+      title: 'Chapter 1 Deadline',
+      description: 'Deadline for Chapter 1 (Introduction) submissions.',
+      date: '2025-11-07',
+      type: 'Milestone',
+      createdBy: 'u8'
+    },
+    {
+      id: 'tl3',
+      title: 'Chapter 2 Deadline',
+      description: 'Deadline for Chapter 2 (Review of Related Literature) submissions.',
+      date: '2025-11-14',
+      type: 'Milestone',
+      createdBy: 'u8'
+    },
+    {
+      id: 'tl4',
+      title: 'Chapter 3 Deadline',
+      description: 'Deadline for Chapter 3 (Methodology) submissions.',
+      date: '2025-11-21',
+      type: 'Milestone',
+      createdBy: 'u8'
+    },
+    {
+      id: 'tl5',
+      title: 'Defense Week',
+      description: 'Scheduled week for thesis proposal and chapter defenses.',
+      date: '2025-11-25',
+      type: 'Milestone',
+      createdBy: 'u8'
+    },
+    {
+      id: 'tl6',
+      title: 'Final Submission',
+      description: 'Deadline for final manuscript and complete technical appendices.',
+      date: '2025-12-05',
+      type: 'Deadline',
+      createdBy: 'u8'
+    }
+  ],
+
   // ── FEEDBACK ────────────────────────────────────────────────
   feedback: [
     {
@@ -505,6 +596,17 @@ const MockDB = {
         : ['Chapter 4 (Results)', 'Chapter 5 (Conclusion)', 'System Prototype', 'Final Manuscript', 'Final Defense'];
     }
   },
+  setGroupSubmissionOverride(groupId, overrideData) {
+    const g = DB.groups.find(group => group.id === groupId);
+    if (!g) return null;
+    g.submissionOverride = {
+      enabled: !!overrideData.enabled,
+      reason: overrideData.reason || '',
+      updatedBy: overrideData.updatedBy || null,
+      updatedAt: overrideData.updatedAt || new Date().toISOString()
+    };
+    return g.submissionOverride;
+  },
 
   // Submissions
   getAllSubmissions() {
@@ -551,6 +653,15 @@ const MockDB = {
   addSchedule(schedule) {
     DB.schedules.push(schedule);
     return schedule;
+  },
+
+  // Global Timeline
+  getAllTimeline() {
+    return [...DB.timeline];
+  },
+  addTimeline(item) {
+    DB.timeline.push(item);
+    return item;
   },
 
   // Feedback

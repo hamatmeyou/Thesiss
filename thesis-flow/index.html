@@ -51,7 +51,7 @@
               <span class="btn-text">Sign In</span>
               <span class="btn-loader hidden">⟳</span>
             </button>
-            <p class="auth-hint">Demo: student@plmun.edu.ph / adviser@plmun.edu.ph (pass: demo1234)</p>
+            <p class="auth-hint">Demo: student@plmun.edu.ph / adviser@plmun.edu.ph / panelist@plmun.edu.ph / capstone.head@plmun.edu.ph / student.assistant@plmun.edu.ph / admin@plmun.edu.ph (pass: demo1234)</p>
           </form>
 
           <!-- Register Form -->
@@ -64,14 +64,8 @@
               <label for="reg-email">Email Address</label>
               <input type="email" id="reg-email" placeholder="username@plmun.edu.ph" required />
             </div>
-            <div class="form-group">
-              <label for="reg-role">Role</label>
-              <select id="reg-role" required>
-                <option value="">Select your role</option>
-                <option value="student">Student</option>
-                <option value="adviser">Faculty / Adviser</option>
-              </select>
-            </div>
+            <input type="hidden" id="reg-role" value="student" />
+            <p class="auth-hint" style="text-align:left;">Newly registered accounts are created as <strong>Student</strong> by default.</p>
             <div class="form-group">
               <label for="reg-password">Password</label>
               <input type="password" id="reg-password" placeholder="Min. 8 characters" required />
