@@ -636,6 +636,7 @@ textarea {
   align-items: center;
   gap: 16px;
   transition: transform var(--transition), box-shadow var(--transition);
+  cursor: pointer;
 }
 
 .stat-card:hover {

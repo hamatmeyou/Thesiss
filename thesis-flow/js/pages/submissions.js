@@ -84,7 +84,57 @@ function renderSubsList(subs, user) {
     return new Date(threads[b][0].submittedAt) - new Date(threads[a][0].submittedAt);
   });
 
+  let actionCard = '';
+  if (user.role === 'student') {
+    const group = MockDB.getGroupByUserId(user.id);
+    if (group) {
+      const currentStage = group.progress.stages[group.progress.currentStage];
+      
+      // 1. Check if ANY submission exists for current stage
+      const hasSubForStage = subs.some(s => 
+        s.title.toLowerCase().includes(currentStage.toLowerCase()) || 
+        (s.type === 'Chapter' && currentStage.toLowerCase().includes('chapter')) ||
+        (s.type === 'Proposal' && currentStage.toLowerCase().includes('proposal'))
+      );
+
+      // 2. Check if latest of ANY thread is Rejected
+      const rejectedThread = Object.keys(threads).find(tid => threads[tid][0].status === 'Rejected');
+
+      if (!hasSubForStage) {
+        actionCard = `
+          <div class="card" style="background:rgba(251,191,36,0.08); border-color:rgba(251,191,36,0.3); padding:16px; margin-bottom:20px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div style="font-size:24px;">🔔</div>
+                <div>
+                  <div style="font-weight:700; color:var(--warning); font-size:0.95rem;">Action Required: Submit ${currentStage}</div>
+                  <div style="font-size:0.82rem; color:var(--text-2); margin-top:2px;">Your group is currently at this stage. Please submit your document for review.</div>
+                </div>
+              </div>
+              <button class="btn-sm btn-primary" onclick="openSubmitModal()">Submit Now</button>
+            </div>
+          </div>`;
+      } else if (rejectedThread) {
+        const t = threads[rejectedThread][0];
+        actionCard = `
+          <div class="card" style="background:rgba(248,113,113,0.08); border-color:rgba(248,113,113,0.3); padding:16px; margin-bottom:20px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div style="font-size:24px;">❌</div>
+                <div>
+                  <div style="font-weight:700; color:var(--danger); font-size:0.95rem;">Resubmission Required: ${t.title}</div>
+                  <div style="font-size:0.82rem; color:var(--text-2); margin-top:2px;">Your previous version was rejected. Please review feedback and resubmit.</div>
+                </div>
+              </div>
+              <button class="btn-sm btn-primary" onclick="openResubmitModal('${t.threadId}', '${t.title}', '${t.type}')">Resubmit Version</button>
+            </div>
+          </div>`;
+      }
+    }
+  }
+
   return `<div style="display:flex;flex-direction:column;gap:20px;">
+    ${actionCard}
     ${sortedThreadIds.map(tid => {
       const versions = threads[tid];
       const latest = versions[0];

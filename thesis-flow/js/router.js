@@ -56,12 +56,12 @@ function buildSidebar(user) {
   const routes = ROUTES[user.role] || ROUTES.student;
 
   nav.innerHTML = routes.map(r => `
-    <div class="nav-item ${r.id === currentPage ? 'active' : ''}"
-         id="nav-${r.id}"
-         onclick="navigateTo('${r.id}')">
+    <a href="#" class="nav-item ${r.id === currentPage ? 'active' : ''}"
+       id="nav-${r.id}"
+       onclick="event.preventDefault(); navigateTo('${r.id}')">
       <span class="nav-icon">${r.icon}</span>
       <span class="nav-label">${r.label}</span>
-    </div>
+    </a>
   `).join('');
 }
 
