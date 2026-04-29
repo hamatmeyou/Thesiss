@@ -1,15 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap');
 
 :root {
-  --bg: #07070f;
-  --bg-2: #0e0e1c;
-  --bg-3: #16162a;
+  --bg: #0a120b;
+  --bg-2: #101b12;
+  --bg-3: #172419;
   --glass: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --primary: #4a7c3d;
-  --primary-2: #7fb069;
-  --accent: #a7c957;
-  --success: #34d399;
+  --glass-border: rgba(160, 214, 139, 0.18);
+  --primary: #5f8f4f;
+  --primary-2: #8fbe78;
+  --accent: #bddf8a;
+  --success: #6fbe73;
   --warning: #fbbf24;
   --danger: #f87171;
   --text: #f0f0ff;
@@ -232,7 +232,6 @@ textarea {
 .auth-tab.active {
   background: var(--primary);
   color: #fff;
-  box-shadow: 0 4px 12px rgba(74, 124, 61, 0.4);
 }
 
 .auth-form {
@@ -297,7 +296,6 @@ textarea {
   font-weight: 600;
   font-size: 0.95rem;
   transition: all var(--transition);
-  box-shadow: 0 4px 16px rgba(74, 124, 61, 0.35);
   position: relative;
   overflow: hidden;
 }
@@ -307,7 +305,7 @@ textarea {
   position: absolute;
   inset: 0;
   background: rgba(255, 255, 255, 0.1);
-  opacity: 0;
+  opacity: 0 !important;
   transition: opacity var(--transition);
 }
 
@@ -317,7 +315,6 @@ textarea {
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 24px rgba(74, 124, 61, 0.5);
 }
 
 .btn-primary:active {
