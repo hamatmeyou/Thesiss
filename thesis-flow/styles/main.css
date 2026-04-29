@@ -6,9 +6,9 @@
   --bg-3: #16162a;
   --glass: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.08);
-  --primary: #7c6df0;
-  --primary-2: #9b8ef7;
-  --accent: #c084fc;
+  --primary: #4a7c3d;
+  --primary-2: #7fb069;
+  --accent: #a7c957;
   --success: #34d399;
   --warning: #fbbf24;
   --danger: #f87171;
@@ -108,8 +108,8 @@ textarea {
   min-height: 100vh;
   position: relative;
   overflow: hidden;
-  background: radial-gradient(ellipse at 20% 50%, rgba(124, 109, 240, 0.15) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 20%, rgba(192, 132, 252, 0.12) 0%, transparent 50%),
+  background: radial-gradient(ellipse at 20% 50%, rgba(74, 124, 61, 0.18) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(167, 201, 87, 0.14) 0%, transparent 50%),
     var(--bg);
 }
 
@@ -130,7 +130,7 @@ textarea {
 .orb-1 {
   width: 400px;
   height: 400px;
-  background: rgba(124, 109, 240, 0.2);
+  background: rgba(74, 124, 61, 0.24);
   top: -100px;
   left: -100px;
   animation-delay: 0s;
@@ -139,7 +139,7 @@ textarea {
 .orb-2 {
   width: 300px;
   height: 300px;
-  background: rgba(192, 132, 252, 0.15);
+  background: rgba(167, 201, 87, 0.18);
   bottom: -80px;
   right: -80px;
   animation-delay: 3s;
@@ -183,7 +183,7 @@ textarea {
   font-size: 48px;
   display: block;
   margin-bottom: 12px;
-  filter: drop-shadow(0 0 20px rgba(124, 109, 240, 0.6));
+  filter: drop-shadow(0 0 20px rgba(74, 124, 61, 0.6));
 }
 
 .brand-title {
@@ -232,7 +232,7 @@ textarea {
 .auth-tab.active {
   background: var(--primary);
   color: #fff;
-  box-shadow: 0 4px 12px rgba(124, 109, 240, 0.4);
+  box-shadow: 0 4px 12px rgba(74, 124, 61, 0.4);
 }
 
 .auth-form {
@@ -272,7 +272,7 @@ textarea {
 .form-group input:focus,
 .form-group select:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(124, 109, 240, 0.2);
+  box-shadow: 0 0 0 3px rgba(74, 124, 61, 0.25);
 }
 
 .form-group select option {
@@ -297,7 +297,7 @@ textarea {
   font-weight: 600;
   font-size: 0.95rem;
   transition: all var(--transition);
-  box-shadow: 0 4px 16px rgba(124, 109, 240, 0.35);
+  box-shadow: 0 4px 16px rgba(74, 124, 61, 0.35);
   position: relative;
   overflow: hidden;
 }
@@ -317,7 +317,7 @@ textarea {
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 24px rgba(124, 109, 240, 0.5);
+  box-shadow: 0 6px 24px rgba(74, 124, 61, 0.5);
 }
 
 .btn-primary:active {
@@ -435,9 +435,9 @@ textarea {
 }
 
 .nav-item.active {
-  background: rgba(124, 109, 240, 0.15);
+  background: rgba(74, 124, 61, 0.18);
   color: var(--primary-2);
-  border-color: rgba(124, 109, 240, 0.2);
+  border-color: rgba(74, 124, 61, 0.3);
 }
 
 .nav-item .nav-icon {
@@ -747,7 +747,7 @@ tr:hover td {
 }
 
 .badge-primary {
-  background: rgba(124, 109, 240, 0.15);
+  background: rgba(74, 124, 61, 0.18);
   color: var(--primary-2);
 }
 
@@ -775,7 +775,7 @@ tr:hover td {
 .btn-outline:hover {
   border-color: var(--primary);
   color: var(--primary-2);
-  background: rgba(124, 109, 240, 0.1);
+  background: rgba(74, 124, 61, 0.14);
 }
 
 .btn-danger-sm {
@@ -970,7 +970,7 @@ tr:hover td {
 .modal-form .form-group select:focus,
 .modal-form .form-group textarea:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(124, 109, 240, 0.2);
+  box-shadow: 0 0 0 3px rgba(74, 124, 61, 0.25);
 }
 
 .modal-form .form-group textarea {
@@ -1034,7 +1034,7 @@ tr:hover td {
   background: var(--primary);
   flex-shrink: 0;
   margin-top: 4px;
-  box-shadow: 0 0 10px rgba(124, 109, 240, 0.5);
+  box-shadow: 0 0 10px rgba(74, 124, 61, 0.5);
   position: relative;
   z-index: 1;
 }
@@ -1123,9 +1123,9 @@ tr:hover td {
 
 /* ── VERSIONING UI ── */
 .version-badge {
-  background: rgba(124, 109, 240, 0.1);
+  background: rgba(74, 124, 61, 0.14);
   color: var(--primary-2);
-  border: 1px solid rgba(124, 109, 240, 0.2);
+  border: 1px solid rgba(74, 124, 61, 0.3);
   padding: 2px 8px;
   border-radius: 6px;
   font-size: 0.75rem;
