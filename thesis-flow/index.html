@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Thesis Flow — A centralized thesis management platform for students and faculty." />
+  <title>Thesis Flow | Centralized Thesis Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="styles/main.css" />
+</head>
+
+<body>
+  <div id="app">
+
+    <!-- ===================== AUTH SCREEN ===================== -->
+    <div id="screen-auth" class="screen active">
+      <div class="auth-bg">
+        <div class="auth-orb orb-1"></div>
+        <div class="auth-orb orb-2"></div>
+        <div class="auth-orb orb-3"></div>
+      </div>
+      <div class="auth-container">
+        <div class="auth-brand">
+          <div class="brand-icon">📘</div>
+          <h1 class="brand-title">Thesis<span>Flow</span></h1>
+          <p class="brand-tagline">PLMun Centralized Thesis Management System</p>
+        </div>
+        <div class="auth-card glass-card">
+          <div class="auth-tabs">
+            <button id="tab-login" class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
+            <button id="tab-register" class="auth-tab" onclick="switchAuthTab('register')">Register</button>
+          </div>
+
+          <!-- Login Form -->
+          <form id="form-login" class="auth-form" onsubmit="handleLogin(event)">
+            <div class="form-group">
+              <label for="login-email">Email Address</label>
+              <input type="email" id="login-email" placeholder="username@plmun.edu.ph" required />
+            </div>
+            <div class="form-group">
+              <label for="login-password">Password</label>
+              <input type="password" id="login-password" placeholder="••••••••" required />
+            </div>
+            <div id="login-error" class="form-error hidden"></div>
+            <button type="submit" class="btn-primary btn-full" id="btn-login">
+              <span class="btn-text">Sign In</span>
+              <span class="btn-loader hidden">⟳</span>
+            </button>
+            <p class="auth-hint">Demo: student@plmun.edu.ph / adviser@plmun.edu.ph (pass: demo1234)</p>
+          </form>
+
+          <!-- Register Form -->
+          <form id="form-register" class="auth-form hidden" onsubmit="handleRegister(event)">
+            <div class="form-group">
+              <label for="reg-name">Full Name</label>
+              <input type="text" id="reg-name" placeholder="Juan Dela Cruz" required />
+            </div>
+            <div class="form-group">
+              <label for="reg-email">Email Address</label>
+              <input type="email" id="reg-email" placeholder="username@plmun.edu.ph" required />
+            </div>
+            <div class="form-group">
+              <label for="reg-role">Role</label>
+              <select id="reg-role" required>
+                <option value="">Select your role</option>
+                <option value="student">Student</option>
+                <option value="adviser">Faculty / Adviser</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="reg-password">Password</label>
+              <input type="password" id="reg-password" placeholder="Min. 8 characters" required />
+            </div>
+            <div id="reg-error" class="form-error hidden"></div>
+            <button type="submit" class="btn-primary btn-full">Create Account</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== APP SHELL ===================== -->
+    <div id="screen-app" class="screen hidden">
+
+      <!-- Sidebar -->
+      <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+          <div class="brand-icon-sm">📘</div>
+          <span class="brand-title-sm">Thesis<span>Flow</span></span>
+        </div>
+        <nav class="sidebar-nav" id="sidebar-nav">
+          <!-- Populated by JS based on role -->
+        </nav>
+        <div class="sidebar-footer">
+          <div class="user-badge" id="sidebar-user" onclick="navigateTo('profile')" style="cursor:pointer;" title="View Profile">
+            <div class="user-avatar" id="sidebar-avatar">?</div>
+            <div class="user-info">
+              <span class="user-name" id="sidebar-name">Loading...</span>
+              <span class="user-role" id="sidebar-role">...</span>
+            </div>
+          </div>
+          <button class="btn-logout" onclick="handleLogout()" title="Logout">⏏</button>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <div class="topbar">
+          <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+          <div class="topbar-title" id="topbar-title">Dashboard</div>
+          <div class="topbar-actions">
+            <div class="notification-bell" onclick="toggleNotifications()">
+              🔔
+              <span class="notif-badge" id="notif-badge">3</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-content" id="page-content">
+          <!-- Pages dynamically rendered here -->
+        </div>
+      </main>
+
+    </div>
+
+    <!-- ===================== MODALS ===================== -->
+    <div id="modal-overlay" class="modal-overlay hidden" onclick="closeModal()">
+      <div class="modal-box glass-card" onclick="event.stopPropagation()" id="modal-box">
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <div id="modal-content"></div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast-container" class="toast-container"></div>
+
+  </div>
+
+  <script src="data/mockData.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/router.js"></script>
+  <script src="js/pages/dashboard.js"></script>
+  <script src="js/pages/groups.js"></script>
+  <script src="js/pages/submissions.js"></script>
+  <script src="js/pages/schedules.js"></script>
+  <script src="js/pages/feedback.js"></script>
+  <script src="js/pages/users.js"></script>
+  <script src="js/pages/profile.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+
+</html>
