@@ -168,7 +168,11 @@ function openResubmitModal(threadId, title, type) {
       <div class="form-group"><label>Document Title</label><input type="text" id="sub-title" value="${title}" readonly style="background:var(--bg-2);" /></div>
       <div class="form-group"><label>Type</label><input type="text" id="sub-type" value="${type}" readonly style="background:var(--bg-2);" /></div>
       <div class="form-group"><label>Description of Changes</label><textarea id="sub-desc" placeholder="What did you update in this version?"></textarea></div>
-      <div class="form-group"><label>New File Name</label><input type="text" id="sub-file" placeholder="e.g., ${title}_v2.pdf" /></div>
+      <div class="form-group">
+        <label>Upload File</label>
+        <input type="file" id="sub-file-upload" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar,.txt,.png,.jpg,.jpeg" onchange="handleSubmissionFileUpload(event)" />
+        <div id="sub-file-meta" style="font-size:0.8rem;color:var(--text-3);margin-top:6px;">No file selected</div>
+      </div>
       <div class="modal-actions">
         <button class="btn-sm btn-outline" onclick="closeModal()">Cancel</button>
         <button class="btn-sm btn-primary" onclick="submitNewVersion('${threadId}')">Submit Version</button>
@@ -182,9 +186,11 @@ function submitNewVersion(threadId) {
   const title = document.getElementById('sub-title').value;
   const type  = document.getElementById('sub-type').value;
   const desc  = document.getElementById('sub-desc').value.trim();
-  const file  = document.getElementById('sub-file').value.trim();
+  const fileInput = document.getElementById('sub-file-upload');
+  const selectedFile = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
 
   if (!desc) { showToast('Please describe the changes.', 'warning'); return; }
+  if (!selectedFile) { showToast('Please upload a file first.', 'warning'); return; }
 
   MockDB.addSubmission({
     id: MockDB.genId('s'),
@@ -193,8 +199,8 @@ function submitNewVersion(threadId) {
     title, description: desc, type,
     status: 'Pending',
     fileUrl: '#',
-    fileName: file || title + '_revised.pdf',
-    fileSize: (Math.random()*4+0.5).toFixed(1) + ' MB',
+    fileName: selectedFile.name,
+    fileSize: formatUploadedFileSize(selectedFile.size),
     submittedBy: user.id,
     submittedAt: new Date().toISOString().split('T')[0],
     reviewedAt: null,
@@ -262,7 +268,11 @@ function openSubmitModal() {
         </select>
       </div>
       <div class="form-group"><label>Description</label><textarea id="sub-desc" placeholder="Briefly describe what this submission contains..."></textarea></div>
-      <div class="form-group"><label>File Name (simulated)</label><input type="text" id="sub-file" placeholder="e.g., Chapter1_Introduction.pdf" /></div>
+      <div class="form-group">
+        <label>Upload File</label>
+        <input type="file" id="sub-file-upload" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar,.txt,.png,.jpg,.jpeg" onchange="handleSubmissionFileUpload(event)" />
+        <div id="sub-file-meta" style="font-size:0.8rem;color:var(--text-3);margin-top:6px;">No file selected</div>
+      </div>
       <div class="modal-actions">
         <button class="btn-sm btn-outline" onclick="closeModal()">Cancel</button>
         <button class="btn-sm btn-primary" onclick="submitDocument('${group.id}')">Submit</button>
@@ -274,9 +284,11 @@ function submitDocument(groupId) {
   const title = document.getElementById('sub-title').value.trim();
   const type  = document.getElementById('sub-type').value;
   const desc  = document.getElementById('sub-desc').value.trim();
-  const file  = document.getElementById('sub-file').value.trim();
+  const fileInput = document.getElementById('sub-file-upload');
+  const selectedFile = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
 
   if (!title || !desc) { showToast('Please fill in all fields.', 'warning'); return; }
+  if (!selectedFile) { showToast('Please upload a file first.', 'warning'); return; }
 
   MockDB.addSubmission({
     id: MockDB.genId('s'),
@@ -284,8 +296,8 @@ function submitDocument(groupId) {
     title, description: desc, type,
     status: 'Pending',
     fileUrl: '#',
-    fileName: file || title + '.pdf',
-    fileSize: (Math.random()*4+0.5).toFixed(1) + ' MB',
+    fileName: selectedFile.name,
+    fileSize: formatUploadedFileSize(selectedFile.size),
     submittedBy: getCurrentUser().id,
     submittedAt: new Date().toISOString().split('T')[0],
     reviewedAt: null,
@@ -295,4 +307,26 @@ function submitDocument(groupId) {
   closeModal();
   showToast('Document submitted for review!', 'success');
   renderSubmissions(getCurrentUser());
+}
+
+function handleSubmissionFileUpload(event) {
+  const file = event && event.target && event.target.files && event.target.files[0]
+    ? event.target.files[0]
+    : null;
+  const metaEl = document.getElementById('sub-file-meta');
+  if (!metaEl) return;
+  if (!file) {
+    metaEl.textContent = 'No file selected';
+    return;
+  }
+
+  metaEl.textContent = `Selected: ${file.name} (${formatUploadedFileSize(file.size)})`;
+}
+
+function formatUploadedFileSize(sizeInBytes) {
+  if (!sizeInBytes || sizeInBytes < 0) return '0 KB';
+  const sizeInMB = sizeInBytes / (1024 * 1024);
+  if (sizeInMB >= 1) return `${sizeInMB.toFixed(2)} MB`;
+  const sizeInKB = sizeInBytes / 1024;
+  return `${Math.max(sizeInKB, 0.1).toFixed(1)} KB`;
 }
