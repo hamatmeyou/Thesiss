@@ -94,8 +94,13 @@ function toggleNotifications() {
 // Sidebar toggle
 function toggleSidebar() {
   const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  
   if (window.innerWidth <= 768) {
-    sidebar.classList.toggle('mobile-open');
+    const isOpen = sidebar.classList.toggle('mobile-open');
+    if (overlay) {
+      overlay.classList.toggle('active', isOpen);
+    }
   } else {
     sidebar.classList.toggle('collapsed');
     const labels = sidebar.querySelectorAll('.nav-label, .nav-section-label, .brand-title-sm, .user-info');

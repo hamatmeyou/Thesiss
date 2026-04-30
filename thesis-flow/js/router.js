@@ -91,7 +91,11 @@ function navigateTo(pageId) {
 
   // Close mobile sidebar
   const sidebar = document.getElementById('sidebar');
-  if (window.innerWidth <= 768) sidebar.classList.remove('mobile-open');
+  const overlay = document.getElementById('sidebar-overlay');
+  if (window.innerWidth <= 768) {
+    sidebar.classList.remove('mobile-open');
+    if (overlay) overlay.classList.remove('active');
+  }
 
   // Render correct page
   switch (pageId) {

@@ -17,7 +17,7 @@ const DB = {
       avatar: 'AR',
       program: 'BS Computer Science',
       yearLevel: '4th Year',
-      createdAt: '2025-08-01'
+      createdAt: '2026-02-01'
     },
     {
       id: 'u2',
@@ -29,7 +29,7 @@ const DB = {
       avatar: 'CS',
       program: 'BS Computer Science',
       yearLevel: '4th Year',
-      createdAt: '2025-08-01'
+      createdAt: '2026-02-01'
     },
     {
       id: 'u3',
@@ -41,7 +41,7 @@ const DB = {
       avatar: 'MC',
       program: 'BS Information Technology',
       yearLevel: '3rd Year',
-      createdAt: '2025-08-03'
+      createdAt: '2026-02-03'
     },
     {
       id: 'u4',
@@ -53,7 +53,7 @@ const DB = {
       avatar: 'LB',
       program: 'BS Information Technology',
       yearLevel: '3rd Year',
-      createdAt: '2025-08-03'
+      createdAt: '2026-02-03'
     },
     {
       id: 'u5',
@@ -65,7 +65,7 @@ const DB = {
       avatar: 'SL',
       program: 'BS Computer Engineering',
       yearLevel: '4th Year',
-      createdAt: '2025-08-05'
+      createdAt: '2026-02-05'
     },
     {
       id: 'u6',
@@ -77,7 +77,7 @@ const DB = {
       avatar: 'RT',
       department: 'College of Computing',
       specialization: 'Machine Learning, Data Science',
-      createdAt: '2025-07-15'
+      createdAt: '2026-01-15'
     },
     {
       id: 'u7',
@@ -89,7 +89,7 @@ const DB = {
       avatar: 'EN',
       department: 'College of Engineering',
       specialization: 'IoT, Embedded Systems',
-      createdAt: '2025-07-15'
+      createdAt: '2026-01-15'
     },
     {
       id: 'u8',
@@ -99,7 +99,7 @@ const DB = {
       role: 'admin',
       groupId: null,
       avatar: 'AU',
-      createdAt: '2025-07-01'
+      createdAt: '2026-01-01'
     },
     {
       id: 'u9',
@@ -112,7 +112,7 @@ const DB = {
       position: 'Capstone Head',
       assignedGroups: [],
       status: 'active',
-      createdAt: '2025-07-01'
+      createdAt: '2026-01-01'
     },
     {
       id: 'u10',
@@ -125,7 +125,7 @@ const DB = {
       position: 'Capstone Student Assistant',
       assignedGroups: [],
       status: 'active',
-      createdAt: '2025-07-01'
+      createdAt: '2026-01-01'
     },
     {
       id: 'u11',
@@ -138,7 +138,7 @@ const DB = {
       department: 'College of Computing',
       assignedGroups: ['g1', 'g2'],
       status: 'active',
-      createdAt: '2025-07-01'
+      createdAt: '2026-01-01'
     }
   ],
 
@@ -157,7 +157,7 @@ const DB = {
       adviserId: 'u6',
       memberIds: ['u1', 'u2'],
       program: 'BS Computer Science',
-      createdAt: '2025-08-10',
+      createdAt: '2026-02-10',
       tags: ['AI', 'Web', 'Education']
     },
     {
@@ -173,7 +173,7 @@ const DB = {
       adviserId: 'u7',
       memberIds: ['u3', 'u4'],
       program: 'BS Information Technology',
-      createdAt: '2025-08-12',
+      createdAt: '2026-02-12',
       tags: ['Mobile', 'Events', 'UX']
     },
     {
@@ -189,7 +189,7 @@ const DB = {
       adviserId: 'u7',
       memberIds: ['u5'],
       program: 'BS Computer Engineering',
-      createdAt: '2025-08-15',
+      createdAt: '2026-02-15',
       tags: ['IoT', 'Hardware', 'Environment']
     },
     {
@@ -205,7 +205,7 @@ const DB = {
       adviserId: null,
       memberIds: [],
       program: 'BS Information Systems',
-      createdAt: '2025-09-01',
+      createdAt: '2026-03-01',
       tags: ['Health', 'Database', 'Security']
     }
   ],
@@ -225,8 +225,8 @@ const DB = {
       fileName: 'G1_Chapter1_v1.pdf',
       fileSize: '1.2 MB',
       submittedBy: 'u1',
-      submittedAt: '2025-09-05',
-      reviewedAt: '2025-09-08',
+      submittedAt: '2026-03-05',
+      reviewedAt: '2026-03-08',
       reviewedBy: 'u6'
     },
     {
@@ -242,8 +242,8 @@ const DB = {
       fileName: 'G1_Chapter1_v2.pdf',
       fileSize: '1.3 MB',
       submittedBy: 'u1',
-      submittedAt: '2025-09-12',
-      reviewedAt: '2025-09-15',
+      submittedAt: '2026-03-12',
+      reviewedAt: '2026-03-15',
       reviewedBy: 'u6'
     },
     {
@@ -259,7 +259,7 @@ const DB = {
       fileName: 'G1_Chapter2_RRL.pdf',
       fileSize: '2.4 MB',
       submittedBy: 'u2',
-      submittedAt: '2025-09-20',
+      submittedAt: '2026-03-20',
       reviewedAt: null,
       reviewedBy: null
     },
@@ -276,8 +276,8 @@ const DB = {
       fileName: 'G2_Proposal_Final.pdf',
       fileSize: '3.1 MB',
       submittedBy: 'u3',
-      submittedAt: '2025-08-25',
-      reviewedAt: '2025-08-30',
+      submittedAt: '2026-02-25',
+      reviewedAt: '2026-03-01',
       reviewedBy: 'u7'
     },
     {
@@ -293,7 +293,7 @@ const DB = {
       fileName: 'G2_Mockups_v2.pdf',
       fileSize: '5.8 MB',
       submittedBy: 'u4',
-      submittedAt: '2025-10-01',
+      submittedAt: '2026-04-01',
       reviewedAt: null,
       reviewedBy: null
     },
@@ -310,8 +310,8 @@ const DB = {
       fileName: 'G3_Final_Thesis.pdf',
       fileSize: '8.2 MB',
       submittedBy: 'u5',
-      submittedAt: '2025-11-10',
-      reviewedAt: '2025-11-14',
+      submittedAt: '2026-04-10',
+      reviewedAt: '2026-04-14',
       reviewedBy: 'u7'
     }
   ],
@@ -324,7 +324,7 @@ const DB = {
       title: 'Chapter 1 Defense',
       description: 'Oral defense of the Introduction chapter with the adviser panel.',
       type: 'Defense',
-      date: '2025-10-10',
+      date: '2026-04-10',
       time: '10:00 AM',
       venue: 'Room 301, IT Building',
       status: 'Done',
@@ -337,7 +337,7 @@ const DB = {
       title: 'Chapter 2-3 Consultation',
       description: 'Progress consultation on RRL and methodology chapters.',
       type: 'Consultation',
-      date: '2025-10-28',
+      date: '2026-05-15',
       time: '2:00 PM',
       venue: 'Faculty Room 105',
       status: 'Upcoming',
@@ -350,7 +350,7 @@ const DB = {
       title: 'Proposal Defense',
       description: 'Panel defense of the CampusConnect proposal.',
       type: 'Defense',
-      date: '2025-09-15',
+      date: '2026-03-15',
       time: '9:00 AM',
       venue: 'Conference Room A',
       status: 'Done',
@@ -363,7 +363,7 @@ const DB = {
       title: 'System Demo & Mid-Defense',
       description: 'Demonstration of the working prototype to the panel.',
       type: 'Defense',
-      date: '2025-11-05',
+      date: '2026-05-05',
       time: '1:00 PM',
       venue: 'Lab 204, IT Building',
       status: 'Upcoming',
@@ -376,7 +376,7 @@ const DB = {
       title: 'Final Oral Defense',
       description: 'Final thesis defense before the panel of judges.',
       type: 'Final Defense',
-      date: '2025-11-20',
+      date: '2026-05-20',
       time: '8:00 AM',
       venue: 'Auditorium Hall B',
       status: 'Upcoming',
@@ -391,7 +391,7 @@ const DB = {
       id: 'tl1',
       title: 'Proposal Deadline',
       description: 'All thesis groups must submit their approved proposal documents.',
-      date: '2025-10-31',
+      date: '2026-04-30',
       type: 'Deadline',
       createdBy: 'u8'
     },
@@ -399,7 +399,7 @@ const DB = {
       id: 'tl2',
       title: 'Chapter 1 Deadline',
       description: 'Deadline for Chapter 1 (Introduction) submissions.',
-      date: '2025-11-07',
+      date: '2026-05-07',
       type: 'Milestone',
       createdBy: 'u8'
     },
@@ -407,7 +407,7 @@ const DB = {
       id: 'tl3',
       title: 'Chapter 2 Deadline',
       description: 'Deadline for Chapter 2 (Review of Related Literature) submissions.',
-      date: '2025-11-14',
+      date: '2026-05-14',
       type: 'Milestone',
       createdBy: 'u8'
     },
@@ -415,7 +415,7 @@ const DB = {
       id: 'tl4',
       title: 'Chapter 3 Deadline',
       description: 'Deadline for Chapter 3 (Methodology) submissions.',
-      date: '2025-11-21',
+      date: '2026-05-21',
       type: 'Milestone',
       createdBy: 'u8'
     },
@@ -423,7 +423,7 @@ const DB = {
       id: 'tl5',
       title: 'Defense Week',
       description: 'Scheduled week for thesis proposal and chapter defenses.',
-      date: '2025-11-25',
+      date: '2026-05-25',
       type: 'Milestone',
       createdBy: 'u8'
     },
@@ -431,7 +431,7 @@ const DB = {
       id: 'tl6',
       title: 'Final Submission',
       description: 'Deadline for final manuscript and complete technical appendices.',
-      date: '2025-12-05',
+      date: '2026-06-05',
       type: 'Deadline',
       createdBy: 'u8'
     }
@@ -446,7 +446,7 @@ const DB = {
       authorId: 'u6',
       content: 'Chapter 1 is well-written. The problem statement is clearly defined. However, please revisit the scope and limitations section — be more specific about what the system will NOT cover.',
       rating: 4,
-      createdAt: '2025-09-08T10:30:00'
+      createdAt: '2026-03-08T10:30:00'
     },
     {
       id: 'fb2',
@@ -455,7 +455,7 @@ const DB = {
       authorId: 'u6',
       content: 'Objectives need to follow the SMART framework. Please revise objectives 3 and 4 to be more measurable.',
       rating: null,
-      createdAt: '2025-09-08T10:45:00'
+      createdAt: '2026-03-08T10:45:00'
     },
     {
       id: 'fb3',
@@ -464,7 +464,7 @@ const DB = {
       authorId: 'u7',
       content: 'Excellent proposal! The conceptual framework is solid and the methodology is appropriate. Approved for proceeding to Chapter 1. Minor: fix citation format in page 12.',
       rating: 5,
-      createdAt: '2025-08-30T14:00:00'
+      createdAt: '2026-03-01T14:00:00'
     },
     {
       id: 'fb4',
@@ -473,7 +473,7 @@ const DB = {
       authorId: 'u7',
       content: 'Outstanding work. The IoT integration is well-documented. Results chapter demonstrates clear validation of the system objectives. Highly commended.',
       rating: 5,
-      createdAt: '2025-11-14T09:00:00'
+      createdAt: '2026-04-14T09:00:00'
     }
   ],
 
@@ -486,17 +486,17 @@ const DB = {
       message: 'Dr. Torres left feedback on your Chapter 1 submission.',
       type: 'feedback',
       read: false,
-      createdAt: '2025-09-08T10:30:00',
+      createdAt: '2026-03-08T10:30:00',
       link: 'feedback'
     },
     {
       id: 'n2',
       userId: 'u1',
       title: 'Schedule Added',
-      message: 'A consultation has been scheduled on Oct 28 at 2:00 PM.',
+      message: 'A consultation has been scheduled on May 15 at 2:00 PM.',
       type: 'schedule',
       read: false,
-      createdAt: '2025-10-01T08:00:00',
+      createdAt: '2026-04-01T08:00:00',
       link: 'schedules'
     },
     {
@@ -506,7 +506,7 @@ const DB = {
       message: 'Chapter 2 - RRL is awaiting adviser review.',
       type: 'submission',
       read: false,
-      createdAt: '2025-09-20T15:00:00',
+      createdAt: '2026-03-20T15:00:00',
       link: 'submissions'
     },
     {
@@ -516,7 +516,7 @@ const DB = {
       message: 'Prof. Navarro approved your proposal. Proceed to Chapter 1.',
       type: 'approval',
       read: true,
-      createdAt: '2025-08-30T14:00:00',
+      createdAt: '2026-03-01T14:00:00',
       link: 'submissions'
     },
     {
@@ -526,7 +526,7 @@ const DB = {
       message: 'Group SmartLearn submitted Chapter 2 for review.',
       type: 'submission',
       read: false,
-      createdAt: '2025-09-20T15:00:00',
+      createdAt: '2026-03-20T15:00:00',
       link: 'submissions'
     }
   ]

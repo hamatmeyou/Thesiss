@@ -372,6 +372,17 @@ textarea {
   width: 64px;
 }
 
+.sidebar.collapsed .sidebar-footer {
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 0;
+}
+
+.sidebar.collapsed .user-badge {
+  justify-content: center;
+  width: 100%;
+}
+
 .sidebar-header {
   display: flex;
   align-items: center;
@@ -472,6 +483,7 @@ textarea {
   gap: 10px;
   flex: 1;
   overflow: hidden;
+  min-width: 0; /* Allows children to truncate */
 }
 
 .user-avatar {
@@ -492,6 +504,7 @@ textarea {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-width: 0;
 }
 
 .user-name {
@@ -1074,6 +1087,25 @@ tr:hover td {
 }
 
 /* ── RESPONSIVE ── */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 90;
+  opacity: 0;
+  transition: opacity var(--transition);
+  pointer-events: none;
+}
+
+.sidebar-overlay.active {
+  display: block;
+  opacity: 1;
+  pointer-events: all;
+}
+
 @media (max-width: 768px) {
   .sidebar {
     position: fixed;
@@ -1081,7 +1113,8 @@ tr:hover td {
     left: 0;
     height: 100vh;
     transform: translateX(-100%);
-    width: var(--sidebar-w) !important;
+    width: 260px !important;
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.4);
   }
 
   .sidebar.mobile-open {
@@ -1094,6 +1127,7 @@ tr:hover td {
 
   .stats-grid {
     grid-template-columns: 1fr 1fr;
+    gap: 12px;
   }
 
   .page-content {
@@ -1103,19 +1137,65 @@ tr:hover td {
   .topbar {
     padding: 0 16px;
   }
+
+  .modal-box {
+    padding: 24px 16px;
+    max-height: 90vh;
+    border-radius: var(--radius-sm);
+  }
+
+  .modal-overlay {
+    padding: 12px;
+  }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 580px) {
   .stats-grid {
     grid-template-columns: 1fr;
   }
 
+  .page-header h2 {
+    font-size: 1.4rem;
+  }
+}
+
+@media (max-width: 480px) {
   .auth-container {
     padding: 16px;
   }
 
   .auth-card {
     padding: 24px 20px;
+  }
+
+  .topbar-title {
+    font-size: 1rem;
+  }
+}
+
+/* ── DASHBOARD SPECIFIC ── */
+.dashboard-grid-2-1 {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 992px) {
+  .dashboard-grid-2-1 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.responsive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 480px) {
+  .responsive-grid {
+    grid-template-columns: 1fr;
   }
 }
 
