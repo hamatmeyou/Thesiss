@@ -1307,3 +1307,156 @@ tr:hover td {
   background: var(--glass-border);
   z-index: 0;
 }
+/* -- MEET PAGE -- */
+.meet-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 180px);
+  background: var(--bg-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--glass-border);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.meet-frame-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: var(--bg-3);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.jitsi-iframe-wrapper {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 768px) {
+  .meet-container {
+    height: calc(100vh - 220px);
+  }
+}
+
+/* -- NATIVE MEET STYLES -- */
+.media-preview {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: var(--radius-sm);
+  margin: 20px 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border: 1px solid var(--glass-border);
+}
+
+.media-preview video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.preview-placeholder {
+  color: var(--text-3);
+  font-size: 0.9rem;
+}
+
+.meet-active-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 180px);
+  gap: 20px;
+}
+
+.video-grid {
+  flex: 1;
+  display: grid;
+  gap: 15px;
+  align-content: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.video-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  background: var(--bg-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-label {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  z-index: 2;
+}
+
+.meet-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  padding: 20px;
+  background: var(--bg-2);
+  border-top: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+}
+
+.control-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.control-btn:hover {
+  background: var(--bg-3);
+  transform: scale(1.1);
+}
+
+.control-btn.off {
+  background: var(--danger);
+  color: #fff;
+  border-color: transparent;
+}
+
+.control-btn.btn-danger {
+  background: rgba(248, 113, 113, 0.2);
+  color: var(--danger);
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+.control-btn.btn-danger:hover {
+  background: var(--danger);
+  color: #fff;
+}
+

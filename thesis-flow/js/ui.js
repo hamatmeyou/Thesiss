@@ -147,7 +147,9 @@ function userName(userId) {
 }
 
 // Confirm dialog
+let confirmCallback = null;
 function confirmAction(message, onConfirm) {
+  confirmCallback = onConfirm;
   openModal(`
     <div style="text-align:center; padding:8px 0;">
       <div style="font-size:48px; margin-bottom:16px;">⚠️</div>
@@ -155,8 +157,16 @@ function confirmAction(message, onConfirm) {
       <div style="font-size:0.88rem; color:var(--text-2); margin-bottom:24px;">${message}</div>
       <div style="display:flex; gap:10px; justify-content:center;">
         <button class="btn-sm btn-outline" onclick="closeModal()">Cancel</button>
-        <button class="btn-sm btn-primary" onclick="closeModal(); (${onConfirm.toString()})()">Confirm</button>
+        <button class="btn-sm btn-primary" onclick="executeConfirm()">Confirm</button>
       </div>
     </div>
   `);
+}
+
+function executeConfirm() {
+  closeModal();
+  if (typeof confirmCallback === 'function') {
+    confirmCallback();
+    confirmCallback = null;
+  }
 }

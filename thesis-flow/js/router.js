@@ -7,6 +7,7 @@ const ROUTES = {
     { id: 'submissions', label: 'Submissions',  icon: '📄' },
     { id: 'schedules',   label: 'Schedules',    icon: '📅' },
     { id: 'feedback',    label: 'Feedback',     icon: '💬' },
+    { id: 'meet',        label: 'Personal Meet', icon: '📹' },
     { id: 'profile',     label: 'My Profile',   icon: '👤' },
   ],
   adviser: [
@@ -15,6 +16,7 @@ const ROUTES = {
     { id: 'submissions', label: 'Submissions',  icon: '📄' },
     { id: 'schedules',   label: 'Schedules',    icon: '📅' },
     { id: 'feedback',    label: 'Feedback',     icon: '💬' },
+    { id: 'meet',        label: 'Personal Meet', icon: '📹' },
     { id: 'profile',     label: 'My Profile',   icon: '👤' },
   ],
   panelist: [
@@ -22,6 +24,7 @@ const ROUTES = {
     { id: 'groups',      label: 'Assigned Groups', icon: '👥' },
     { id: 'submissions', label: 'Submissions', icon: '📄' },
     { id: 'feedback',    label: 'Feedback',    icon: '💬' },
+    { id: 'meet',        label: 'Personal Meet', icon: '📹' },
     { id: 'profile',     label: 'My Profile',  icon: '👤' },
   ],
   admin: [
@@ -30,6 +33,7 @@ const ROUTES = {
     { id: 'submissions', label: 'Submissions',  icon: '📄' },
     { id: 'schedules',   label: 'Schedules',    icon: '📅' },
     { id: 'users',       label: 'Users',        icon: '🛡️' },
+    { id: 'meet',        label: 'Personal Meet', icon: '📹' },
     { id: 'profile',     label: 'My Profile',   icon: '👤' },
   ],
   capstone_head: [
@@ -38,6 +42,7 @@ const ROUTES = {
     { id: 'submissions', label: 'Submissions', icon: '📄' },
     { id: 'schedules',   label: 'Schedules',   icon: '📅' },
     { id: 'feedback',    label: 'Feedback',    icon: '💬' },
+    { id: 'meet',        label: 'Personal Meet', icon: '📹' },
     { id: 'profile',     label: 'My Profile',  icon: '👤' },
   ],
   student_assistant: [
@@ -45,6 +50,7 @@ const ROUTES = {
     { id: 'groups',      label: 'Groups',      icon: '👥' },
     { id: 'submissions', label: 'Submissions', icon: '📄' },
     { id: 'feedback',    label: 'Feedback',    icon: '💬' },
+    { id: 'meet',        label: 'Personal Meet', icon: '📹' },
     { id: 'profile',     label: 'My Profile',  icon: '👤' },
   ]
 };
@@ -105,6 +111,7 @@ function navigateTo(pageId) {
     case 'schedules':   renderSchedules(user); break;
     case 'feedback':    renderFeedback(user);  break;
     case 'users':       renderUsers(user);     break;
+    case 'meet':        renderMeet(user);      break;
     case 'profile':     renderProfile(user);   break;
     default:
       content.innerHTML = `<div class="empty-state"><div class="empty-icon">🚧</div><h3>Coming Soon</h3><p>This page is under construction.</p></div>`;
