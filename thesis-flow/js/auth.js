@@ -46,6 +46,23 @@ function handleLogin(e) {
       btn.disabled = false;
       return;
     }
+    // Eligibility Check for Students
+    if (user.role === 'student') {
+      const allowedYears = ['3rd Year', '4th Year'];
+      const hasThesisSubject = user.subjects && user.subjects.some(s => 
+        s.toLowerCase().includes('capstone') || s.toLowerCase().includes('thesis')
+      );
+
+      if (!allowedYears.includes(user.yearLevel) || !hasThesisSubject) {
+        errEl.textContent = 'Access Denied: Thesis Flow is restricted to 3rd and 4th-year students enrolled in Capstone subjects.';
+        errEl.classList.remove('hidden');
+        text.classList.remove('hidden');
+        loader.classList.add('hidden');
+        btn.disabled = false;
+        return;
+      }
+    }
+
     currentUser = user;
     sessionStorage.setItem('tf_user', JSON.stringify(user));
     text.classList.remove('hidden');
@@ -60,6 +77,8 @@ function handleRegister(e) {
   const name     = document.getElementById('reg-name').value.trim();
   const email    = document.getElementById('reg-email').value.trim();
   const role     = document.getElementById('reg-role').value;
+  const yearLevel = document.getElementById('reg-year').value;
+  const subjects  = document.getElementById('reg-subjects').value.split(',').map(s => s.trim()).filter(s => s);
   const password = document.getElementById('reg-password').value;
   const errEl    = document.getElementById('reg-error');
 
@@ -85,6 +104,8 @@ function handleRegister(e) {
   const newUser = {
     id: MockDB.genId('u'),
     name, email, password, role,
+    yearLevel,
+    subjects,
     groupId: null,
     assignedGroups: [],
     profile: {},

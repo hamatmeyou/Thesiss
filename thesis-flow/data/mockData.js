@@ -17,6 +17,7 @@ const DB = {
       avatar: 'AR',
       program: 'BS Computer Science',
       yearLevel: '4th Year',
+      subjects: ['Capstone 2', 'Professional Elective 3'],
       createdAt: '2026-02-01'
     },
     {
@@ -29,6 +30,7 @@ const DB = {
       avatar: 'CS',
       program: 'BS Computer Science',
       yearLevel: '4th Year',
+      subjects: ['Capstone 2', 'Information Assurance'],
       createdAt: '2026-02-01'
     },
     {
@@ -41,6 +43,7 @@ const DB = {
       avatar: 'MC',
       program: 'BS Information Technology',
       yearLevel: '3rd Year',
+      subjects: ['Capstone 1', 'Mobile App Dev'],
       createdAt: '2026-02-03'
     },
     {
@@ -53,6 +56,7 @@ const DB = {
       avatar: 'LB',
       program: 'BS Information Technology',
       yearLevel: '3rd Year',
+      subjects: ['Capstone 1', 'Network Admin'],
       createdAt: '2026-02-03'
     },
     {
@@ -65,6 +69,7 @@ const DB = {
       avatar: 'SL',
       program: 'BS Computer Engineering',
       yearLevel: '4th Year',
+      subjects: ['Capstone 2', 'Embedded Systems'],
       createdAt: '2026-02-05'
     },
     {
@@ -138,6 +143,32 @@ const DB = {
       department: 'College of Computing',
       assignedGroups: ['g1', 'g2'],
       status: 'active',
+      createdAt: '2026-01-01'
+    },
+    {
+      id: 'u_test_2nd',
+      name: 'John Junior',
+      email: 'junior@plmun.edu.ph',
+      password: 'demo1234',
+      role: 'student',
+      groupId: null,
+      avatar: 'JJ',
+      program: 'BS Information Technology',
+      yearLevel: '2nd Year',
+      subjects: ['Data Structures', 'Object Oriented Programming'],
+      createdAt: '2026-01-01'
+    },
+    {
+      id: 'u_test_1st',
+      name: 'Freshman Mike',
+      email: 'fresh@plmun.edu.ph',
+      password: 'demo1234',
+      role: 'student',
+      groupId: null,
+      avatar: 'FM',
+      program: 'BS Computer Science',
+      yearLevel: '1st Year',
+      subjects: ['Introduction to Computing', 'Programming 1'],
       createdAt: '2026-01-01'
     }
   ],

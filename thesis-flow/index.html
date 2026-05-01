@@ -68,6 +68,21 @@
             <input type="hidden" id="reg-role" value="student" />
             <p class="auth-hint" style="text-align:left;">Newly registered accounts are created as <strong>Student</strong> by default.</p>
             <div class="form-group">
+              <label for="reg-year">Year Level</label>
+              <select id="reg-year" class="form-select" required>
+                <option value="" disabled selected>Select Year Level</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="reg-subjects">Current Major Subjects</label>
+              <input type="text" id="reg-subjects" placeholder="e.g. Capstone 1, Mobile Dev" required />
+              <small class="auth-hint">Must include 'Capstone 1' or 'Capstone 2' for Thesis Flow access.</small>
+            </div>
+            <div class="form-group">
               <label for="reg-password">Password</label>
               <input type="password" id="reg-password" placeholder="Min. 8 characters" required />
             </div>
