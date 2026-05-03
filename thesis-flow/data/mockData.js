@@ -560,6 +560,15 @@ const DB = {
       createdAt: '2026-03-20T15:00:00',
       link: 'submissions'
     }
+  ],
+
+  // ── GRADING SYSTEM ──────────────────────────────────────────
+  grades: [
+    { id: 'g_001', userId: 'u1', type: 'quiz', score: 85, maxScore: 100, title: 'Unit 1 Quiz', createdAt: '2026-03-01' },
+    { id: 'g_002', userId: 'u1', type: 'activity', score: 90, maxScore: 100, title: 'Lab Exercise 1', createdAt: '2026-03-05' },
+    { id: 'g_003', userId: 'u1', type: 'attendance', score: 10, maxScore: 10, title: 'Week 1 Attendance', createdAt: '2026-03-07' },
+    { id: 'g_004', userId: 'u1', type: 'group_act', score: 95, maxScore: 100, title: 'Collaborative Research', createdAt: '2026-03-10' },
+    { id: 'g_005', userId: 'u2', type: 'quiz', score: 70, maxScore: 100, title: 'Unit 1 Quiz', createdAt: '2026-03-01' }
   ]
 };
 
@@ -719,6 +728,52 @@ const MockDB = {
   getUnreadCount(userId) {
     return DB.notifications.filter(n => n.userId === userId && !n.read).length;
   },
+
+  // Grading Logic
+  getGradesByStudent(userId) {
+    const allowedTypes = ['quiz', 'activity', 'attendance', 'group_act'];
+    return DB.grades.filter(g => g.userId === userId && allowedTypes.includes(g.type));
+  },
+
+  calculateFinalGrade(userId) {
+    const studentGrades = this.getGradesByStudent(userId);
+    if (studentGrades.length === 0) return 0;
+
+    // Define weights for the grading system
+    const weights = {
+      quiz: 0.25,        // 25%
+      activity: 0.25,    // 25%
+      attendance: 0.20,  // 20%
+      group_act: 0.30    // 30%
+    };
+
+    const totals = {
+      quiz: { score: 0, max: 0 },
+      activity: { score: 0, max: 0 },
+      attendance: { score: 0, max: 0 },
+      group_act: { score: 0, max: 0 }
+    };
+
+    // Aggregate scores by type
+    studentGrades.forEach(g => {
+      if (totals[g.type]) {
+        totals[g.type].score += g.score;
+        totals[g.type].max += g.maxScore;
+      }
+    });
+
+    // Calculate weighted average
+    let finalGrade = 0;
+    for (const type in weights) {
+      if (totals[type].max > 0) {
+        const categoryPercentage = (totals[type].score / totals[type].max);
+        finalGrade += categoryPercentage * weights[type] * 100;
+      }
+    }
+
+    return parseFloat(finalGrade.toFixed(2));
+  },
+
   markAllRead(userId) {
     DB.notifications.filter(n => n.userId === userId).forEach(n => n.read = true);
   },
