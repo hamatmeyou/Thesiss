@@ -13,69 +13,82 @@
 <body>
   <div class="mesh-bg"></div>
 
-  <div class="container">
-    <header class="animate-fade-in">
-      <div class="brand">
-        🚀 <span>CampusFlow</span>
+  <!-- Top Navigation Bar -->
+  <header class="top-nav">
+    <div class="nav-left">
+      <div class="brand">🚀 <span>CampusFlow</span></div>
+    </div>
+    <div class="nav-right">
+      <div class="search-box">
+        <input type="text" placeholder="Search classes, assignments...">
+        <span>🔍</span>
       </div>
-      <div class="nav-actions">
-        <button class="btn btn-ghost" id="btn-join">Join Class</button>
-        <button class="btn btn-primary" id="btn-create">Create Class</button>
-        <div class="user-profile" style="margin-left: 1rem; cursor: pointer;">
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User Avatar" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--primary);">
-        </div>
+      <div class="user-menu">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User Avatar" class="user-avatar" id="user-avatar">
+        <div class="notification-bell">🔔</div>
       </div>
-    </header>
+    </div>
+  </header>
 
-    <main>
-      <section class="hero animate-fade-in" style="margin-bottom: 4rem;">
-        <h1 style="font-family: var(--font-heading); font-size: 3rem; margin-bottom: 1rem;">Welcome back, <span style="color: var(--secondary);">Alex</span>.</h1>
-        <p style="color: var(--text-muted); font-size: 1.125rem;">You have 4 active classes and 2 pending assignments today.</p>
-      </section>
-
-      <div class="launchpad-grid" id="class-grid">
-        <!-- Class Card 1 -->
-        <div class="glass-card class-card animate-fade-in" style="animation-delay: 0.1s;">
-          <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=600" class="class-card-bg" alt="Tech">
-          <div class="class-info">
-            <h2 class="class-title">Advanced Web Systems</h2>
-            <p class="class-subtitle">CS-402 • Prof. Sarah Jenkins</p>
-          </div>
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-item active" data-page="dashboard">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Dashboard</span>
         </div>
-
-        <!-- Class Card 2 -->
-        <div class="glass-card class-card animate-fade-in" style="animation-delay: 0.2s;">
-          <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=600" class="class-card-bg" alt="Logic">
-          <div class="class-info">
-            <h2 class="class-title">Artificial Intelligence</h2>
-            <p class="class-subtitle">CS-301 • Dr. James Wilson</p>
-          </div>
+        <div class="nav-item" data-page="classes">
+          <span class="nav-icon">📚</span>
+          <span class="nav-label">My Classes</span>
         </div>
-
-        <!-- Class Card 3 -->
-        <div class="glass-card class-card animate-fade-in" style="animation-delay: 0.3s;">
-          <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=600" class="class-card-bg" alt="Network">
-          <div class="class-info">
-            <h2 class="class-title">Cybersecurity Fundamentals</h2>
-            <p class="class-subtitle">IT-305 • Prof. Elena Rodriguez</p>
-          </div>
+        <div class="nav-item" data-page="assignments">
+          <span class="nav-icon">✏️</span>
+          <span class="nav-label">Assignments</span>
         </div>
-
-        <!-- Class Card 4 -->
-        <div class="glass-card class-card animate-fade-in" style="animation-delay: 0.4s;">
-          <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc4b?auto=format&fit=crop&q=80&w=600" class="class-card-bg" alt="Database">
-          <div class="class-info">
-            <h2 class="class-title">Cloud Infrastructure</h2>
-            <p class="class-subtitle">IT-408 • Dr. Michael Chen</p>
-          </div>
+        <div class="nav-item" data-page="grades">
+          <span class="nav-icon">📈</span>
+          <span class="nav-label">Grades</span>
         </div>
       </div>
-    </main>
 
-    <footer style="margin-top: 6rem; padding: 2rem 0; border-top: 1px solid var(--glass-border); text-align: center; color: var(--text-muted); font-size: 0.875rem;">
-      <p>&copy; 2026 PLMun CampusFlow. Empowering the next generation of innovators.</p>
-    </footer>
-  </div>
+      <div class="nav-section">
+        <div class="nav-item" data-page="messages">
+          <span class="nav-icon">💬</span>
+          <span class="nav-label">Messages</span>
+          <span class="badge">3</span>
+        </div>
+        <div class="nav-item" data-page="schedule">
+          <span class="nav-icon">📅</span>
+          <span class="nav-label">Schedule</span>
+        </div>
+        <div class="nav-item" data-page="groups">
+          <span class="nav-icon">👥</span>
+          <span class="nav-label">Study Groups</span>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-item" data-page="users">
+          <span class="nav-icon">👤</span>
+          <span class="nav-label">Directory</span>
+        </div>
+        <div class="nav-item" data-page="thesis">
+          <span class="nav-icon">📚</span>
+          <span class="nav-label">Thesis</span>
+        </div>
+        <div class="nav-item" data-page="profile">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-label">Profile</span>
+        </div>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+    <div id="page-content"></div>
+  </main>
 
   <!-- Modals -->
   <div id="modal-overlay" class="hidden" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 1000; display: flex; align-items: center; justify-content: center;">
