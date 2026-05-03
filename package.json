@@ -1,0 +1,24 @@
+{
+  "name": "thesiss",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "npx serve .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hamatmeyou/Thesiss.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hamatmeyou/Thesiss/issues"
+  },
+  "homepage": "https://github.com/hamatmeyou/Thesiss#readme",
+  "dependencies": {
+    "peerjs": "^1.5.5"
+  }
+}
