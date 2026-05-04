@@ -749,49 +749,48 @@ function renderStudentDashboard() {
           <h3>3</h3>
           <p>Unread Messages</p>
         </div>
-      </div>`;
-}
-    </div>
-
-    <h2 class="mb-1">My Classes</h2>
-    <div class="launchpad-grid animate-fade-in">
-      ${classData.map((cls, i) => `
-        <div class="glass-card class-card animate-fade-in" style="animation-delay: ${i * 0.1}s;">
-          <img src="${cls.image}" class="class-card-bg" alt="${cls.title}">
-          <div class="class-info">
-            <h3 class="class-title">${cls.title}</h3>
-            <p class="class-subtitle">${cls.code} • ${cls.teacher}</p>
-          </div>
         </div>
-      `).join('')}
-    </div>
-
-    <h2 class="mb-1 mt-2">Upcoming Assignments</h2>
-    <div class="glass-card animate-fade-in">
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Assignment</th>
-              <th>Class</th>
-              <th>Due Date</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${assignmentData.map(a => `
-              <tr>
-                <td><strong>${a.title}</strong></td>
-                <td>${a.class}</td>
-                <td>${a.dueDate}</td>
-                <td><span style="color: var(--secondary); font-weight: 600;">${a.status}</span></td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
       </div>
-    </div>
-  `;
+
+      <h2 class="mb-1">My Classes</h2>
+      <div class="launchpad-grid animate-fade-in">
+        ${classData.map((cls, i) => `
+          <div class="glass-card class-card animate-fade-in" style="animation-delay: ${i * 0.1}s;">
+            <img src="${cls.image}" class="class-card-bg" alt="${cls.title}">
+            <div class="class-info">
+              <h3 class="class-title">${cls.title}</h3>
+              <p class="class-subtitle">${cls.code} • ${cls.teacher}</p>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+      <h2 class="mb-1 mt-2">Upcoming Assignments</h2>
+      <div class="glass-card animate-fade-in">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Assignment</th>
+                <th>Class</th>
+                <th>Due Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${assignmentData.map(a => `
+                <tr>
+                  <td><strong>${a.title}</strong></td>
+                  <td>${a.class}</td>
+                  <td>${a.dueDate}</td>
+                  <td><span style="color: var(--secondary); font-weight: 600;">${a.status}</span></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
 }
 
 // === Classes ===
