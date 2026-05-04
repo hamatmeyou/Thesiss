@@ -12,10 +12,19 @@ const assignmentData = [
   { id: 3, title: 'Security Protocol Analysis', class: 'IT-305', dueDate: '2026-05-15', status: 'pending', submitted: true }
 ];
 
+let currentAssignmentFilter = 'all';
+
 const messageData = [
   { id: 1, sender: 'Sarah Jenkins', preview: 'The assignment deadline has been extended...', time: '2 hours ago', messages: ['The assignment deadline has been extended to next Friday.', 'Make sure to review the updated requirements.'] },
   { id: 2, sender: 'James Wilson', preview: 'Don\'t forget about the project review...', time: '4 hours ago', messages: ['Don\'t forget about the project review on Thursday.'] },
   { id: 3, sender: 'Study Group', preview: 'Meet up at the library tomorrow...', time: '1 day ago', messages: ['Meet up at the library tomorrow at 3 PM?'] }
+];
+
+const campusUsers = [
+  { id: 'p1', name: 'Sarah Jenkins', email: 's.jenkins@university.edu', dept: 'Computer Science', role: 'Instructor', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah' },
+  { id: 'p2', name: 'James Wilson', email: 'j.wilson@university.edu', dept: 'Computer Science', role: 'Instructor', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=James' },
+  { id: 'p3', name: 'Elena Rodriguez', email: 'e.rodriguez@university.edu', dept: 'Information Technology', role: 'Instructor', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Elena' },
+  { id: 's1', name: 'Michael Torres', email: 'm.torres@university.edu', dept: 'Computer Science', role: 'Student', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Michael' }
 ];
 
 const currentUser = {
@@ -52,34 +61,21 @@ const pages = {
   schedule: renderSchedule,
   groups: renderGroups,
   users: renderUsers,
-  profile: renderProfile,
-  thesis: renderThesis
+  profile: renderProfile
 };
 
 let currentPage = 'dashboard';
 
 // === Access Control ===
-function canAccessThesis() {
-  if (currentUser.role === 'student') {
-    // Students: 3rd/4th year OR student assistants
-    return currentUser.year >= 3 || currentUser.isStudentAssistant;
-  } else if (currentUser.role === 'professor') {
-    // Professors: must be adviser or capstone head
-    return currentUser.professorRoles.includes('adviser') || currentUser.professorRoles.includes('capstone_head');
-  }
-  return false;
-}
-
 function canAccessPage(page) {
-  if (page === 'thesis') {
-    return canAccessThesis();
-  }
-  return true; // Other pages are accessible to all
+  return true; // All pages are accessible to all users
 }
 
 // === Navigation ===
+let navItems = null;
 function initNav() {
-  document.querySelectorAll('.nav-item').forEach(item => {
+  navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(item => {
     item.addEventListener('click', () => {
       const page = item.dataset.page;
       if (page) navigateTo(page);
@@ -94,7 +90,7 @@ function navigateTo(page) {
     return;
   }
   
-  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+  if (navItems) navItems.forEach(item => item.classList.remove('active'));
   document.querySelector(`[data-page="${page}"]`).classList.add('active');
   
   currentPage = page;
@@ -218,6 +214,15 @@ function renderClasses() {
 
 // === Assignments ===
 function renderAssignments() {
+  const pendingCount = assignmentData.filter(a => !a.submitted).length;
+  const submittedCount = assignmentData.filter(a => a.submitted).length;
+
+  const filteredData = assignmentData.filter(a => {
+    if (currentAssignmentFilter === 'pending') return !a.submitted;
+    if (currentAssignmentFilter === 'submitted') return a.submitted;
+    return true;
+  });
+
   document.getElementById('page-content').innerHTML = `
     <div class="page-header animate-fade-in">
       <div class="header-content">
@@ -228,12 +233,12 @@ function renderAssignments() {
 
     <div class="glass-card animate-fade-in">
       <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
-        <button class="btn btn-primary btn-sm" style="opacity: 1;">All (${assignmentData.length})</button>
-        <button class="btn btn-ghost btn-sm">Pending (2)</button>
-        <button class="btn btn-ghost btn-sm">Submitted (1)</button>
+        <button class="btn ${currentAssignmentFilter === 'all' ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="filterAssignments('all')">All (${assignmentData.length})</button>
+        <button class="btn ${currentAssignmentFilter === 'pending' ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="filterAssignments('pending')">Pending (${pendingCount})</button>
+        <button class="btn ${currentAssignmentFilter === 'submitted' ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="filterAssignments('submitted')">Submitted (${submittedCount})</button>
       </div>
 
-      ${assignmentData.map((a, i) => `
+      ${filteredData.map((a, i) => `
         <div class="glass-card assignment-card animate-fade-in" style="animation-delay: ${i * 0.1}s; background: rgba(20, 22, 35, 0.4); margin-bottom: 1rem;">
           <div class="assignment-info">
             <h3>${a.title}</h3>
@@ -243,8 +248,15 @@ function renderAssignments() {
           <button class="btn btn-primary btn-sm">${a.submitted ? 'Submitted' : 'Submit'}</button>
         </div>
       `).join('')}
+
+      ${filteredData.length === 0 ? '<div class="empty-state"><h3>No assignments found</h3><p>Try changing your filter criteria.</p></div>' : ''}
     </div>
   `;
+}
+
+function filterAssignments(filter) {
+  currentAssignmentFilter = filter;
+  renderAssignments();
 }
 
 // === Grades ===
@@ -486,35 +498,29 @@ function renderUsers() {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td><strong>Sarah Jenkins</strong></td>
-              <td>s.jenkins@university.edu</td>
-              <td>Computer Science</td>
-              <td>Instructor</td>
-            </tr>
-            <tr>
-              <td><strong>James Wilson</strong></td>
-              <td>j.wilson@university.edu</td>
-              <td>Computer Science</td>
-              <td>Instructor</td>
-            </tr>
-            <tr>
-              <td><strong>Elena Rodriguez</strong></td>
-              <td>e.rodriguez@university.edu</td>
-              <td>Information Technology</td>
-              <td>Instructor</td>
-            </tr>
-            <tr>
-              <td><strong>Michael Torres</strong></td>
-              <td>m.torres@university.edu</td>
-              <td>Computer Science</td>
-              <td>Student</td>
-            </tr>
+            ${campusUsers.map(u => `
+              <tr onclick="viewUserProfile('${u.id}')" style="cursor:pointer;">
+                <td>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <img src="${u.avatar}" style="width:24px;height:24px;border-radius:50%;">
+                    <strong>${u.name}</strong>
+                  </div>
+                </td>
+                <td>${u.email}</td>
+                <td>${u.dept}</td>
+                <td><span class="badge ${u.role === 'Instructor' ? 'badge-primary' : 'badge-secondary'}">${u.role}</span></td>
+              </tr>
+            `).join('')}
           </tbody>
         </table>
       </div>
     </div>
   `;
+}
+
+function viewUserProfile(userId) {
+  const user = campusUsers.find(u => u.id === userId);
+  if (user) alert(`User Profile: ${user.name}\nDepartment: ${user.dept}\nRole: ${user.role}`);
 }
 
 // === Profile ===
@@ -576,162 +582,11 @@ function renderProfile() {
   `;
 }
 
-// === Thesis ===
-function renderThesis() {
-  const isStudent = currentUser.role === 'student';
-  const isProfessor = currentUser.role === 'professor';
-  
-  document.getElementById('page-content').innerHTML = `
-    <div class="page-header animate-fade-in">
-      <div class="header-content">
-        <h1>📚 Thesis Management</h1>
-        <p class="text-muted">${isStudent ? 'View and manage your thesis project' : 'Manage thesis projects as adviser or capstone head'}</p>
-      </div>
-      <div class="header-actions">
-        <button class="btn btn-primary">${isStudent ? 'Submit Thesis' : 'Review Submissions'}</button>
-      </div>
-    </div>
 
-    ${isStudent ? `
-      <div class="glass-card animate-fade-in">
-        <h2>Your Thesis Project</h2>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 2rem 0;">
-          <div>
-            <h3>Project Title</h3>
-            <input type="text" placeholder="Enter thesis title..." style="width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); padding: 0.75rem; border-radius: 12px; color: var(--text-main); margin-top: 0.5rem;">
-          </div>
-          <div>
-            <h3>Status</h3>
-            <select style="width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); padding: 0.75rem; border-radius: 12px; color: var(--text-main); margin-top: 0.5rem;">
-              <option selected>In Progress</option>
-              <option>Planning</option>
-              <option>Implementation</option>
-              <option>Testing</option>
-              <option>Documentation</option>
-              <option>Ready for Review</option>
-              <option>Completed</option>
-            </select>
-          </div>
-        </div>
-        <div style="margin-bottom: 2rem;">
-          <h3>Description</h3>
-          <textarea placeholder="Describe your thesis project, objectives, and progress..." style="width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); padding: 0.75rem; border-radius: 12px; color: var(--text-main); height: 120px; margin-top: 0.5rem; font-family: var(--font-body);"></textarea>
-        </div>
-        <button class="btn btn-primary">Save Progress</button>
-      </div>
-
-      <div class="glass-card animate-fade-in" style="margin-top: 2rem;">
-        <h2>Adviser Information</h2>
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Adviser Name</th>
-                <th>Email</th>
-                <th>Department</th>
-                <th>Contact</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Dr. Sarah Jenkins</strong></td>
-                <td>s.jenkins@university.edu</td>
-                <td>Computer Science</td>
-                <td><button class="btn btn-sm btn-ghost">Message</button></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="glass-card animate-fade-in" style="margin-top: 2rem;">
-        <h2>Thesis Submissions</h2>
-        <div style="margin: 1.5rem 0;">
-          <div style="padding: 1rem; background: rgba(139, 92, 246, 0.1); border-left: 4px solid var(--primary); border-radius: 8px; margin-bottom: 1rem;">
-            <h3 style="margin: 0 0 0.5rem 0;">Proposal Document</h3>
-            <p class="text-muted" style="margin: 0; font-size: 0.9rem;">Submitted on May 1, 2026 • Approved by Dr. Jenkins</p>
-          </div>
-          <div style="padding: 1rem; background: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--secondary); border-radius: 8px; margin-bottom: 1rem;">
-            <h3 style="margin: 0 0 0.5rem 0;">Progress Report 1</h3>
-            <p class="text-muted" style="margin: 0; font-size: 0.9rem;">Submitted on May 15, 2026 • Pending Review</p>
-          </div>
-          <button class="btn btn-primary btn-sm">Upload New Document</button>
-        </div>
-      </div>
-    ` : `
-      <div class="glass-card animate-fade-in">
-        <h2>Your Role</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 1.5rem 0;">
-          ${currentUser.professorRoles.includes('adviser') ? `
-            <div style="padding: 1rem; background: rgba(139, 92, 246, 0.1); border: 1px solid var(--primary); border-radius: 12px;">
-              <h3 style="margin-top: 0;">👨‍🏫 Thesis Adviser</h3>
-              <p class="text-muted" style="margin: 0.5rem 0; font-size: 0.9rem;">Advising student thesis projects</p>
-            </div>
-          ` : ''}
-          ${currentUser.professorRoles.includes('capstone_head') ? `
-            <div style="padding: 1rem; background: rgba(16, 185, 129, 0.1); border: 1px solid var(--secondary); border-radius: 12px;">
-              <h3 style="margin-top: 0;">🎓 Capstone Head</h3>
-              <p class="text-muted" style="margin: 0.5rem 0; font-size: 0.9rem;">Overseeing capstone program</p>
-            </div>
-          ` : ''}
-        </div>
-      </div>
-
-      <div class="glass-card animate-fade-in" style="margin-top: 2rem;">
-        <h2>Students Under Your Supervision</h2>
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Student Name</th>
-                <th>Year</th>
-                <th>Thesis Title</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Alex Morgan</strong></td>
-                <td>3rd Year</td>
-                <td>AI-Based Learning System</td>
-                <td><span style="color: var(--secondary); font-weight: 600;">In Progress</span></td>
-                <td><button class="btn btn-sm btn-primary">Review</button></td>
-              </tr>
-              <tr>
-                <td><strong>Jordan Smith</strong></td>
-                <td>4th Year</td>
-                <td>Cloud Security Analysis</td>
-                <td><span style="color: var(--primary); font-weight: 600;">Ready for Review</span></td>
-                <td><button class="btn btn-sm btn-primary">Review</button></td>
-              </tr>
-              <tr>
-                <td><strong>Casey Brown</strong></td>
-                <td>3rd Year</td>
-                <td>Mobile App Development</td>
-                <td><span style="color: #eab308; font-weight: 600;">Pending Submission</span></td>
-                <td><button class="btn btn-sm btn-ghost">Contact</button></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    `}
-  `;
-}
 
 // === Init ===
 function init() {
   initNav();
-  
-  // Control thesis menu visibility based on permissions
-  const thesisMenuItem = document.querySelector('[data-page="thesis"]');
-  if (canAccessThesis()) {
-    thesisMenuItem.style.display = 'flex';
-  } else {
-    thesisMenuItem.style.display = 'none';
-  }
-  
   renderDashboard();
   document.querySelector('[data-page="dashboard"]').classList.add('active');
   console.log('CampusFlow LMS Initialized');
