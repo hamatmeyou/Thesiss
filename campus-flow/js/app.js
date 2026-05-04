@@ -21,25 +21,25 @@ const testUsers = {
     department: 'Administration',
     permissions: ['view_all_records', 'approve_requests', 'manage_staff']
   },
-  // Academic Heads
-  'academic_head': {
+  // Academic Admin
+  'academic_admin': {
     id: 'academic1',
     password: 'password123',
     name: 'Dr. Patricia Williams',
     email: 'p.williams@university.edu',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Patricia',
-    role: 'academic_head',
+    role: 'academic_admin',
     department: 'Computer Science',
     permissions: ['manage_courses', 'view_department_records', 'approve_grades']
   },
-  // Course Head
-  'course_head': {
+  // Program Coordinator
+  'program_coordinator': {
     id: 'course1',
     password: 'password123',
     name: 'Dr. Robert Chen',
     email: 'r.chen@university.edu',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Robert',
-    role: 'course_head',
+    role: 'program_coordinator',
     department: 'Computer Science',
     assignedCourse: 'CS-402',
     permissions: ['manage_course', 'grade_students', 'manage_materials']
@@ -106,7 +106,7 @@ const testUsers = {
     year: 2,
     permissions: ['view_grades', 'submit_assignments', 'view_messages']
   },
-  // Professors (kept for compatibility)
+  // Instructors
   'sarah': {
     id: 'sarah1',
     password: 'password123',
@@ -114,10 +114,10 @@ const testUsers = {
     email: 's.jenkins@university.edu',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah',
     major: 'Computer Science',
-    role: 'professor',
+    role: 'instructor',
     year: null,
     isStudentAssistant: false,
-    professorRoles: ['adviser'],
+    instructorRoles: ['adviser'],
     permissions: ['teach_course', 'grade_students', 'view_student_records']
   },
   'james': {
@@ -127,23 +127,23 @@ const testUsers = {
     email: 'j.wilson@university.edu',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=James',
     major: 'Computer Science',
-    role: 'professor',
+    role: 'instructor',
     year: null,
     isStudentAssistant: false,
-    professorRoles: ['capstone_head'],
+    instructorRoles: ['capstone_head'],
     permissions: ['teach_course', 'grade_students', 'view_student_records']
   },
   'elena': {
     id: 'elena1',
     password: 'password123',
-    name: 'Prof. Elena Rodriguez',
+    name: 'Elena Rodriguez',
     email: 'e.rodriguez@university.edu',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Elena',
     major: 'Information Technology',
-    role: 'professor',
+    role: 'instructor',
     year: null,
     isStudentAssistant: false,
-    professorRoles: ['adviser', 'capstone_head'],
+    instructorRoles: ['adviser', 'capstone_head'],
     permissions: ['teach_course', 'grade_students', 'view_student_records']
   }
 };
@@ -153,16 +153,65 @@ let isLoggedIn = false;
 
 // === Data ===
 const classData = [
-  { id: 1, title: 'Advanced Web Systems', code: 'CS-402', teacher: 'Prof. Sarah Jenkins', image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=600' },
-  { id: 2, title: 'Artificial Intelligence', code: 'CS-301', teacher: 'Dr. James Wilson', image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=600' },
-  { id: 3, title: 'Cybersecurity Fundamentals', code: 'IT-305', teacher: 'Prof. Elena Rodriguez', image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=600' },
+  { id: 1, title: 'Advanced Web Systems', code: 'CS-402', teacher: 'Instructor Sarah Jenkins', image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=600' },
+  { id: 2, title: 'Artificial Intelligence', code: 'CS-301', teacher: 'Instructor James Wilson', image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=600' },
+  { id: 3, title: 'Cybersecurity Fundamentals', code: 'IT-305', teacher: 'Instructor Elena Rodriguez', image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=600' },
   { id: 4, title: 'Cloud Infrastructure', code: 'IT-408', teacher: 'Dr. Michael Chen', image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc4b?auto=format&fit=crop&q=80&w=600' }
 ];
 
-const assignmentData = [
-  { id: 1, title: 'Design Database Schema', class: 'CS-402', dueDate: '2026-05-10', status: 'pending', submitted: false },
-  { id: 2, title: 'Neural Network Implementation', class: 'CS-301', dueDate: '2026-05-12', status: 'pending', submitted: false },
-  { id: 3, title: 'Security Protocol Analysis', class: 'IT-305', dueDate: '2026-05-15', status: 'pending', submitted: true }
+const assignmentSubmissions = [
+  {
+    id: 1,
+    title: 'Design Database Schema',
+    courseId: 'CS-402',
+    courseName: 'Advanced Web Systems',
+    assignmentType: 'Project',
+    module: 'Week 2',
+    dueDate: '2026-05-10',
+    status: 'pending',
+    submitted: false,
+    score: null,
+    maxScore: 100,
+    remarks: '',
+    versionHistory: [
+      { version: 1, date: '2026-05-01', note: 'Initial outline uploaded' }
+    ]
+  },
+  {
+    id: 2,
+    title: 'Neural Network Implementation',
+    courseId: 'CS-301',
+    courseName: 'Artificial Intelligence',
+    assignmentType: 'Project',
+    module: 'Week 3',
+    dueDate: '2026-05-12',
+    status: 'pending',
+    submitted: false,
+    score: null,
+    maxScore: 100,
+    remarks: '',
+    versionHistory: [
+      { version: 1, date: '2026-05-03', note: 'Initial code stub uploaded' }
+    ]
+  },
+  {
+    id: 3,
+    title: 'Security Protocol Analysis',
+    courseId: 'IT-305',
+    courseName: 'Cybersecurity Fundamentals',
+    assignmentType: 'Essay',
+    module: 'Week 4',
+    dueDate: '2026-05-15',
+    status: 'submitted',
+    submitted: true,
+    score: 92,
+    maxScore: 100,
+    remarks: 'Strong analysis, minor formatting notes',
+    versionHistory: [
+      { version: 1, date: '2026-05-05', note: 'Draft uploaded' },
+      { version: 2, date: '2026-05-08', note: 'Revised with faculty feedback' }
+    ]
+  }
 ];
 
 let currentAssignmentFilter = 'all';
@@ -173,12 +222,75 @@ const messageData = [
   { id: 3, sender: 'Study Group', preview: 'Meet up at the library tomorrow...', time: '1 day ago', messages: ['Meet up at the library tomorrow at 3 PM?'] }
 ];
 
+const supportTickets = [
+  {
+    id: 1,
+    requester: 'Michael Torres',
+    courseId: 'CS-402',
+    title: 'Unable to upload assignment file',
+    status: 'Open',
+    priority: 'High',
+    submittedOn: '2026-05-02',
+    updates: ['The upload button returns an error after selecting a file.', 'Requesting confirmation that version history is saved.']
+  },
+  {
+    id: 2,
+    requester: 'Jordan Smith',
+    courseId: 'CS-301',
+    title: 'Clarification on grading rubric',
+    status: 'Answered',
+    priority: 'Medium',
+    submittedOn: '2026-05-01',
+    updates: ['Can you clarify the expectations for deliverable 2?', 'Instructor responded with grading criteria.']
+  }
+];
+
+const courseSchedule = [
+  { id: 1, courseId: 'CS-402', title: 'Week 1: Introduction', date: 'May 4, 2026', type: 'Module', description: 'Course overview and syllabus review.' },
+  { id: 2, courseId: 'CS-402', title: 'Assignment 1 Due', date: 'May 10, 2026', type: 'Deadline', description: 'Design Database Schema submission deadline.' },
+  { id: 3, courseId: 'CS-301', title: 'Week 3: Neural Networks', date: 'May 7, 2026', type: 'Module', description: 'Hands-on neural network workshop.' },
+  { id: 4, courseId: 'IT-305', title: 'Midterm Exam', date: 'May 14, 2026', type: 'Exam', description: 'Security protocols midterm assessment.' }
+];
+
 const campusUsers = [
   { id: 'p1', name: 'Sarah Jenkins', email: 's.jenkins@university.edu', dept: 'Computer Science', role: 'Instructor', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah' },
   { id: 'p2', name: 'James Wilson', email: 'j.wilson@university.edu', dept: 'Computer Science', role: 'Instructor', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=James' },
   { id: 'p3', name: 'Elena Rodriguez', email: 'e.rodriguez@university.edu', dept: 'Information Technology', role: 'Instructor', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Elena' },
   { id: 's1', name: 'Michael Torres', email: 'm.torres@university.edu', dept: 'Computer Science', role: 'Student', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Michael' }
 ];
+
+const modules = [
+  { id: 'mod-cs402-01', courseId: 'CS-402', title: 'Week 1: Introduction & Setup', description: 'Course overview, syllabus, and development environment setup.', order: 1, startDate: '2026-05-04', endDate: '2026-05-11', isOpen: true },
+  { id: 'mod-cs402-02', courseId: 'CS-402', title: 'Week 2: Database Design', description: 'Fundamentals of relational databases and normalization.', order: 2, startDate: '2026-05-12', endDate: '2026-05-19', isOpen: true },
+  { id: 'mod-cs301-01', courseId: 'CS-301', title: 'Week 1: Neural Networks Basics', description: 'Introduction to neural networks and deep learning.', order: 1, startDate: '2026-05-04', endDate: '2026-05-11', isOpen: true },
+  { id: 'mod-cs301-02', courseId: 'CS-301', title: 'Week 2: Convolutional Networks', description: 'CNNs and image processing techniques.', order: 2, startDate: '2026-05-12', endDate: '2026-05-19', isOpen: true }
+];
+
+const lessons = [
+  { id: 'lesson-01', moduleId: 'mod-cs402-01', title: 'Course Introduction Video', type: 'video', content: 'Learn the course objectives and structure.', order: 1 },
+  { id: 'lesson-02', moduleId: 'mod-cs402-01', title: 'Installing Node.js and npm', type: 'guide', content: 'Step-by-step guide to setting up your development environment.', order: 2 },
+  { id: 'lesson-03', moduleId: 'mod-cs402-02', title: 'Database Normalization Tutorial', type: 'pdf', fileURL: 'https://storage.university.edu/materials/db-normalization.pdf', order: 1 },
+  { id: 'lesson-04', moduleId: 'mod-cs402-02', title: 'SQL Queries Workshop', type: 'video', content: 'Hands-on SQL query writing exercises.', order: 2 },
+  { id: 'lesson-05', moduleId: 'mod-cs301-01', title: 'Neural Networks Overview', type: 'video', content: 'Introduction to neural network architecture.', order: 1 },
+  { id: 'lesson-06', moduleId: 'mod-cs301-02', title: 'CNN Architecture Explained', type: 'guide', content: 'Deep dive into convolutional neural networks.', order: 1 }
+];
+
+const enrollments = [
+  { id: 'enroll-1', courseId: 'CS-402', userId: 'student1', role: 'student', status: 'active', enrolledAt: '2026-01-20' },
+  { id: 'enroll-2', courseId: 'CS-301', userId: 'student1', role: 'student', status: 'active', enrolledAt: '2026-01-20' },
+  { id: 'enroll-3', courseId: 'IT-305', userId: 'student1', role: 'student', status: 'active', enrolledAt: '2026-01-20' },
+  { id: 'enroll-4', courseId: 'CS-402', userId: 'student2', role: 'student', status: 'active', enrolledAt: '2026-01-21' },
+  { id: 'enroll-5', courseId: 'CS-402', userId: 'sarah1', role: 'instructor', status: 'active', enrolledAt: '2026-01-10' }
+];
+
+const gradingQueue = [
+  { id: 'grade-1', assignmentId: 'assign-cs402-01', assignmentTitle: 'Design Database Schema', studentName: 'Jordan Smith', studentId: 'student2', submittedAt: '2026-05-08T14:20:00Z', version: 1, status: 'pending_grade' },
+  { id: 'grade-2', assignmentId: 'assign-cs402-01', assignmentTitle: 'Design Database Schema', studentName: 'Casey Brown', studentId: 'student3', submittedAt: '2026-05-09T10:15:00Z', version: 1, status: 'pending_grade' },
+  { id: 'grade-3', assignmentId: 'assign-cs301-01', assignmentTitle: 'Neural Network Implementation', studentName: 'Alex Morgan', studentId: 'student_ass', submittedAt: '2026-05-09T16:45:00Z', version: 2, status: 'pending_grade' }
+];
+
+let currentModuleFilter = 'all';
+let currentConcernFilter = 'all';
 
 // === Authentication Functions ===
 function showLoginPage() {
@@ -228,15 +340,15 @@ function showLoginPage() {
           <div style="margin-bottom: 1rem;">
             <p class="text-muted" style="margin: 0.5rem 0; font-size: 0.8rem; font-weight: 500;">Academic</p>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem;">
-              <button type="button" class="btn btn-ghost" onclick="quickLogin('academic_head')" style="font-size: 0.8rem; padding: 0.4rem;">📚 Acad Head</button>
-              <button type="button" class="btn btn-ghost" onclick="quickLogin('course_head')" style="font-size: 0.8rem; padding: 0.4rem;">📖 Course Head</button>
+              <button type="button" class="btn btn-ghost" onclick="quickLogin('academic_admin')" style="font-size: 0.8rem; padding: 0.4rem;">📚 Acad Admin</button>
+              <button type="button" class="btn btn-ghost" onclick="quickLogin('program_coordinator')" style="font-size: 0.8rem; padding: 0.4rem;">📖 Program Coordinator</button>
             </div>
           </div>
           
           <div style="margin-bottom: 1rem;">
             <p class="text-muted" style="margin: 0.5rem 0; font-size: 0.8rem; font-weight: 500;">Faculty & Support</p>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem;">
-              <button type="button" class="btn btn-ghost" onclick="quickLogin('sarah')" style="font-size: 0.8rem; padding: 0.4rem;">👨‍🏫 Professor</button>
+              <button type="button" class="btn btn-ghost" onclick="quickLogin('sarah')" style="font-size: 0.8rem; padding: 0.4rem;">👨‍🏫 Instructor</button>
               <button type="button" class="btn btn-ghost" onclick="quickLogin('counselor')" style="font-size: 0.8rem; padding: 0.4rem;">💼 Counselor</button>
             </div>
           </div>
@@ -312,12 +424,18 @@ function checkSavedLogin() {
 const pages = {
   dashboard: renderDashboard,
   classes: renderClasses,
+  course: renderCourseDetail,
+  modules: renderModulesPage,
+  lessons: renderLessonsPage,
   assignments: renderAssignments,
   grades: renderGrades,
   messages: renderMessages,
   schedule: renderSchedule,
   groups: renderGroups,
   users: renderUsers,
+  grading: renderGradingQueue,
+  concerns: renderConcernsPage,
+  admin: renderAdminPanel,
   profile: renderProfile
 };
 
@@ -337,9 +455,9 @@ function getRoleDisplay() {
   const roles = {
     'admin': '👑 Administrator',
     'principal': '🎓 Principal',
-    'academic_head': '📚 Academic Head',
-    'course_head': '📖 Course Head',
-    'professor': '👨‍🏫 Professor',
+    'academic_admin': '📚 Academic Admin',
+    'program_coordinator': '📖 Program Coordinator',
+    'instructor': '👨‍🏫 Instructor',
     'counselor': '💼 Counselor',
     'student_assistant': '🎯 Student Assistant',
     'student': '👨‍🎓 Student'
@@ -347,7 +465,7 @@ function getRoleDisplay() {
   return roles[currentUser.role] || currentUser.role;
 }
 
-// === Navigation ===
+// === Data ===
 let navItems = null;
 function initNav() {
   navItems = document.querySelectorAll('.nav-item');
@@ -383,11 +501,11 @@ function renderDashboard() {
     dashboardContent = renderAdminDashboard();
   } else if (currentUser.role === 'principal') {
     dashboardContent = renderPrincipalDashboard();
-  } else if (currentUser.role === 'academic_head') {
+  } else if (currentUser.role === 'academic_admin') {
     dashboardContent = renderAcademicHeadDashboard();
-  } else if (currentUser.role === 'course_head') {
+  } else if (currentUser.role === 'program_coordinator') {
     dashboardContent = renderCourseHeadDashboard();
-  } else if (currentUser.role === 'professor') {
+  } else if (currentUser.role === 'instructor') {
     dashboardContent = renderProfessorDashboard();
   } else if (currentUser.role === 'counselor') {
     dashboardContent = renderCounselorDashboard();
@@ -576,12 +694,12 @@ function renderCourseHeadDashboard() {
       </div>`;
 }
 
-// Professor Dashboard
+// Instructor Dashboard
 function renderProfessorDashboard() {
   return `
     <div class="page-header animate-fade-in">
       <div class="header-content">
-        <h1>Welcome, <span style="color: var(--primary);">Prof. ${currentUser.name.split(' ')[1]}</span>.</h1>
+        <h1>Welcome, <span style="color: var(--primary);">Instructor ${currentUser.name.split(' ')[1]}</span>.</h1>
         <p class="text-muted">Course Instruction & Student Assessment</p>
       </div>
       <div class="header-actions">
@@ -673,7 +791,7 @@ function renderStudentAssistantDashboard() {
         <p class="text-muted">Student Assistant Dashboard - Peer Support Role</p>
       </div>
       <div class="header-actions">
-        <button class="btn btn-primary" onclick="navigateTo('groups')">My Study Groups</button>
+        <button class="btn btn-primary" onclick="navigateTo('groups')">My Class Groups</button>
       </div>
     </div>
 
@@ -682,7 +800,7 @@ function renderStudentAssistantDashboard() {
         <div class="stat-icon">👥</div>
         <div class="stat-content">
           <h3>3</h3>
-          <p>Study Groups</p>
+          <p>Class Groups</p>
         </div>
       </div>
       <div class="stat-card">
@@ -752,7 +870,7 @@ function renderStudentDashboard() {
         </div>
       </div>
 
-      <h2 class="mb-1">My Classes</h2>
+      <h2 class="mb-1">My Courses</h2>
       <div class="launchpad-grid animate-fade-in">
         ${classData.map((cls, i) => `
           <div class="glass-card class-card animate-fade-in" style="animation-delay: ${i * 0.1}s;">
@@ -778,10 +896,10 @@ function renderStudentDashboard() {
               </tr>
             </thead>
             <tbody>
-              ${assignmentData.map(a => `
+              ${assignmentSubmissions.map(a => `
                 <tr>
                   <td><strong>${a.title}</strong></td>
-                  <td>${a.class}</td>
+                  <td>${a.courseId}</td>
                   <td>${a.dueDate}</td>
                   <td><span style="color: var(--secondary); font-weight: 600;">${a.status}</span></td>
                 </tr>
@@ -798,8 +916,8 @@ function renderClasses() {
   document.getElementById('page-content').innerHTML = `
     <div class="page-header animate-fade-in">
       <div class="header-content">
-        <h1>My Classes</h1>
-        <p class="text-muted">Manage your courses and access materials</p>
+        <h1>My Courses</h1>
+        <p class="text-muted">Manage your enrolled courses and access learning materials</p>
       </div>
       <div class="header-actions">
         <button class="btn btn-primary">Join Class</button>
@@ -823,10 +941,10 @@ function renderClasses() {
 
 // === Assignments ===
 function renderAssignments() {
-  const pendingCount = assignmentData.filter(a => !a.submitted).length;
-  const submittedCount = assignmentData.filter(a => a.submitted).length;
+  const pendingCount = assignmentSubmissions.filter(a => !a.submitted).length;
+  const submittedCount = assignmentSubmissions.filter(a => a.submitted).length;
 
-  const filteredData = assignmentData.filter(a => {
+  const filteredData = assignmentSubmissions.filter(a => {
     if (currentAssignmentFilter === 'pending') return !a.submitted;
     if (currentAssignmentFilter === 'submitted') return a.submitted;
     return true;
@@ -842,7 +960,7 @@ function renderAssignments() {
 
     <div class="glass-card animate-fade-in">
       <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
-        <button class="btn ${currentAssignmentFilter === 'all' ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="filterAssignments('all')">All (${assignmentData.length})</button>
+        <button class="btn ${currentAssignmentFilter === 'all' ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="filterAssignments('all')">All (${assignmentSubmissions.length})</button>
         <button class="btn ${currentAssignmentFilter === 'pending' ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="filterAssignments('pending')">Pending (${pendingCount})</button>
         <button class="btn ${currentAssignmentFilter === 'submitted' ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="filterAssignments('submitted')">Submitted (${submittedCount})</button>
       </div>
@@ -851,8 +969,9 @@ function renderAssignments() {
         <div class="glass-card assignment-card animate-fade-in" style="animation-delay: ${i * 0.1}s; background: rgba(20, 22, 35, 0.4); margin-bottom: 1rem;">
           <div class="assignment-info">
             <h3>${a.title}</h3>
-            <p class="text-muted">${a.class}</p>
+            <p class="text-muted">${a.courseId} • ${a.assignmentType} • ${a.module}</p>
             <div class="due-date">Due ${a.dueDate}</div>
+            ${a.submitted ? `<p class="text-muted" style="margin: 0.5rem 0 0 0;">Grade: ${a.score}/${a.maxScore} (${a.status})</p>` : ''}
           </div>
           <button class="btn btn-primary btn-sm">${a.submitted ? 'Submitted' : 'Submit'}</button>
         </div>
@@ -940,8 +1059,8 @@ function renderMessages() {
   document.getElementById('page-content').innerHTML = `
     <div class="page-header animate-fade-in">
       <div class="header-content">
-        <h1>Messages</h1>
-        <p class="text-muted">Communicate with your instructors and peers</p>
+        <h1>Messages & Support</h1>
+        <p class="text-muted">Communicate with instructors and manage support requests</p>
       </div>
     </div>
 
@@ -978,6 +1097,24 @@ function renderMessages() {
         </div>
       </div>
     </div>
+
+    <div class="glass-card animate-fade-in" style="margin-top: 2rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 style="margin: 0;">Support Tickets</h2>
+        <span class="badge">${supportTickets.length}</span>
+      </div>
+      ${supportTickets.map(ticket => `
+        <div class="support-ticket" style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+          <div style="display:flex; justify-content: space-between; gap: 1rem; align-items: flex-start;">
+            <div>
+              <h3 style="margin: 0 0 0.25rem 0;">${ticket.title}</h3>
+              <p class="text-muted" style="margin: 0 0 0.25rem 0;">${ticket.courseId} • ${ticket.status} • ${ticket.priority}</p>
+              <p class="text-muted" style="margin: 0; font-size: 0.9rem;">Submitted by ${ticket.requester} on ${ticket.submittedOn}</p>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
   `;
 }
 
@@ -1000,7 +1137,7 @@ function renderSchedule() {
     <div class="page-header animate-fade-in">
       <div class="header-content">
         <h1>Schedule</h1>
-        <p class="text-muted">View your classes and important dates</p>
+        <p class="text-muted">View your course modules, deadlines, and exam dates</p>
       </div>
     </div>
 
@@ -1016,43 +1153,31 @@ function renderSchedule() {
       </div>
 
       <div class="event-list">
-        <h3 style="margin-top: 2rem;">Upcoming Events</h3>
-        <div class="event-item">
-          <div>
-            <h3 style="margin: 0;">CS-402 Lecture</h3>
-            <p class="text-muted">Room 301, Engineering Building</p>
+        <h3 style="margin-top: 2rem;">Upcoming Schedule</h3>
+        ${courseSchedule.map(item => `
+          <div class="event-item">
+            <div>
+              <h3 style="margin: 0;">${item.title}</h3>
+              <p class="text-muted">${item.courseId} • ${item.description}</p>
+            </div>
+            <div class="event-time">${item.date}</div>
           </div>
-          <div class="event-time">May 5, 2:00 PM</div>
-        </div>
-        <div class="event-item">
-          <div>
-            <h3 style="margin: 0;">Assignment Due: Database Schema</h3>
-            <p class="text-muted">Submit via course portal</p>
-          </div>
-          <div class="event-time">May 10, 11:59 PM</div>
-        </div>
-        <div class="event-item">
-          <div>
-            <h3 style="margin: 0;">IT-305 Midterm Exam</h3>
-            <p class="text-muted">Room 105, Testing Center</p>
-          </div>
-          <div class="event-time">May 15, 10:00 AM</div>
-        </div>
+        `).join('')}
       </div>
     </div>
   `;
 }
 
-// === Study Groups ===
+// === Class Groups ===
 function renderGroups() {
   document.getElementById('page-content').innerHTML = `
     <div class="page-header animate-fade-in">
       <div class="header-content">
-        <h1>Study Groups</h1>
-        <p class="text-muted">Join or create study groups for your classes</p>
+        <h1>Class Groups</h1>
+        <p class="text-muted">Join or create class sections and project teams</p>
       </div>
       <div class="header-actions">
-        <button class="btn btn-primary">Create Group</button>
+        <button class="btn btn-primary">Create Section</button>
       </div>
     </div>
 
@@ -1218,6 +1343,325 @@ function renderProfile() {
   document.getElementById('page-content').innerHTML = profileContent;
 }
 
+// === Course Detail ===
+function renderCourseDetail() {
+  const courseId = currentPage === 'course' ? 'CS-402' : 'CS-402'; // Default course
+  const course = classData.find(c => c.code === courseId);
+  const courseModules = modules.filter(m => m.courseId === courseId);
+  const courseAssignments = assignmentSubmissions.filter(a => a.courseId === courseId);
+  
+  document.getElementById('page-content').innerHTML = `
+    <div class="page-header animate-fade-in">
+      <div class="header-content">
+        <h1>${course.title}</h1>
+        <p class="text-muted">${course.code} • Instructor: ${course.teacher}</p>
+      </div>
+    </div>
+
+    <div class="glass-card animate-fade-in" style="margin-bottom: 2rem;">
+      <div style="display: flex; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 2rem;">
+        <button class="tab-button" onclick="switchTab('modules')" style="padding: 1rem; border: none; background: none; color: var(--primary); border-bottom: 2px solid var(--primary); cursor: pointer;">📚 Modules</button>
+        <button class="tab-button" onclick="switchTab('course-assignments')" style="padding: 1rem; border: none; background: none; color: var(--text-muted); cursor: pointer;">✏️ Assignments</button>
+        <button class="tab-button" onclick="switchTab('course-people')" style="padding: 1rem; border: none; background: none; color: var(--text-muted); cursor: pointer;">👥 People</button>
+        <button class="tab-button" onclick="switchTab('course-grades')" style="padding: 1rem; border: none; background: none; color: var(--text-muted); cursor: pointer;">📈 Grades</button>
+      </div>
+
+      <div id="tab-content">
+        <h3>Course Modules</h3>
+        ${courseModules.map(mod => `
+          <div class="glass-card" style="padding: 1.5rem; margin-bottom: 1rem; background: rgba(20, 22, 35, 0.4);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <h4 style="margin: 0 0 0.5rem 0;">${mod.title}</h4>
+                <p class="text-muted" style="margin: 0;">${mod.description}</p>
+                <p class="text-muted" style="margin: 0.5rem 0 0 0; font-size: 0.85rem;">📅 ${mod.startDate} to ${mod.endDate}</p>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="navigateTo('lessons')">View Lessons</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// === Modules Page ===
+function renderModulesPage() {
+  document.getElementById('page-content').innerHTML = `
+    <div class="page-header animate-fade-in">
+      <div class="header-content">
+        <h1>Course Modules</h1>
+        <p class="text-muted">Browse course weeks and topics</p>
+      </div>
+    </div>
+
+    <div class="glass-card animate-fade-in">
+      <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+        <button class="btn ${currentModuleFilter === 'all' ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="filterModules('all')">All (${modules.length})</button>
+        <button class="btn ${currentModuleFilter === 'open' ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="filterModules('open')">Open (${modules.filter(m => m.isOpen).length})</button>
+      </div>
+
+      ${modules.map((mod, i) => `
+        <div class="glass-card animate-fade-in" style="animation-delay: ${i * 0.1}s; padding: 1.5rem; margin-bottom: 1rem; background: rgba(20, 22, 35, 0.4);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div style="flex: 1;">
+              <h3 style="margin: 0 0 0.5rem 0;">${mod.title}</h3>
+              <p class="text-muted" style="margin: 0 0 0.5rem 0;">${mod.description}</p>
+              <div style="display: flex; gap: 1rem; font-size: 0.9rem;">
+                <span>📅 ${mod.startDate}</span>
+                <span>Status: ${mod.isOpen ? '<span style="color: var(--primary);">✓ Open</span>' : '<span style="color: var(--text-muted);">Closed</span>'}</span>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="navigateTo('lessons')">View Lessons</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function filterModules(filter) {
+  currentModuleFilter = filter;
+  renderModulesPage();
+}
+
+// === Lessons Page ===
+function renderLessonsPage() {
+  document.getElementById('page-content').innerHTML = `
+    <div class="page-header animate-fade-in">
+      <div class="header-content">
+        <h1>Learning Materials</h1>
+        <p class="text-muted">Study resources, videos, and guides</p>
+      </div>
+    </div>
+
+    <div class="glass-card animate-fade-in">
+      <h2>Available Lessons</h2>
+      ${lessons.map((lesson, i) => `
+        <div class="glass-card animate-fade-in" style="animation-delay: ${i * 0.1}s; padding: 1.5rem; margin-bottom: 1rem; background: rgba(20, 22, 35, 0.4);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div style="flex: 1;">
+              <h3 style="margin: 0 0 0.5rem 0;">
+                ${lesson.type === 'video' ? '🎥' : lesson.type === 'pdf' ? '📄' : lesson.type === 'guide' ? '📖' : '🔗'} 
+                ${lesson.title}
+              </h3>
+              <p class="text-muted" style="margin: 0;">${lesson.content}</p>
+              <p class="text-muted" style="margin: 0.5rem 0 0 0; font-size: 0.85rem;">Type: ${lesson.type}</p>
+            </div>
+            <button class="btn btn-primary btn-sm">Open</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// === Grading Queue ===
+function renderGradingQueue() {
+  if (currentUser.role !== 'instructor' && currentUser.role !== 'academic_admin' && currentUser.role !== 'program_coordinator') {
+    document.getElementById('page-content').innerHTML = `
+      <div class="page-header animate-fade-in">
+        <h1>Access Denied</h1>
+        <p class="text-muted">Only instructors can access the grading queue.</p>
+      </div>
+    `;
+    return;
+  }
+
+  document.getElementById('page-content').innerHTML = `
+    <div class="page-header animate-fade-in">
+      <div class="header-content">
+        <h1>Submissions to Grade</h1>
+        <p class="text-muted">Review and grade student submissions</p>
+      </div>
+    </div>
+
+    <div class="glass-card animate-fade-in">
+      <h2>Pending Submissions (${gradingQueue.length})</h2>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Assignment</th>
+              <th>Student</th>
+              <th>Submitted</th>
+              <th>Version</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${gradingQueue.map(item => `
+              <tr>
+                <td><strong>${item.assignmentTitle}</strong></td>
+                <td>${item.studentName}</td>
+                <td>${new Date(item.submittedAt).toLocaleDateString()}</td>
+                <td>v${item.version}</td>
+                <td><button class="btn btn-primary btn-sm">Grade</button></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+// === Concerns / Support System ===
+function renderConcernsPage() {
+  const filteredConcerns = currentConcernFilter === 'all' 
+    ? supportTickets 
+    : supportTickets.filter(t => t.status.toLowerCase() === currentConcernFilter);
+
+  document.getElementById('page-content').innerHTML = `
+    <div class="page-header animate-fade-in">
+      <div class="header-content">
+        <h1>Student Support & Feedback</h1>
+        <p class="text-muted">Report issues, ask for clarification, or provide feedback</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-primary" onclick="openConcernForm()">Submit New</button>
+      </div>
+    </div>
+
+    <div class="glass-card animate-fade-in" style="margin-bottom: 2rem;">
+      <h2>Submit a Concern</h2>
+      <form style="display: flex; flex-direction: column; gap: 1rem;">
+        <input type="text" placeholder="Concern title" style="width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); padding: 0.75rem; border-radius: 8px; color: var(--text-main);">
+        <textarea placeholder="Describe your concern..." style="width: 100%; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); padding: 0.75rem; border-radius: 8px; color: var(--text-main); min-height: 100px; resize: none;"></textarea>
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="checkbox" style="width: 18px; height: 18px; cursor: pointer;">
+          <span>Submit anonymously</span>
+        </label>
+        <button type="submit" class="btn btn-primary">Submit Concern</button>
+      </form>
+    </div>
+
+    <div class="glass-card animate-fade-in">
+      <h2>Your Concerns</h2>
+      <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
+        <button class="btn ${currentConcernFilter === 'all' ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="filterConcerns('all')">All (${supportTickets.length})</button>
+        <button class="btn ${currentConcernFilter === 'open' ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="filterConcerns('open')">Open (${supportTickets.filter(t => t.status === 'Open').length})</button>
+        <button class="btn ${currentConcernFilter === 'answered' ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="filterConcerns('answered')">Answered (${supportTickets.filter(t => t.status === 'Answered').length})</button>
+      </div>
+
+      ${filteredConcerns.map(concern => `
+        <div class="glass-card" style="padding: 1.5rem; margin-bottom: 1rem; background: rgba(20, 22, 35, 0.4);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div style="flex: 1;">
+              <h3 style="margin: 0 0 0.5rem 0;">${concern.title}</h3>
+              <p class="text-muted" style="margin: 0 0 0.5rem 0;">${concern.courseId} • ${concern.priority} • ${concern.status}</p>
+              <p style="margin: 0; font-size: 0.95rem;">Submitted by ${concern.requester} on ${concern.submittedOn}</p>
+            </div>
+            <span style="padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; ${concern.status === 'Open' ? 'background: rgba(239, 68, 68, 0.2); color: #ef4444;' : 'background: rgba(34, 197, 94, 0.2); color: #22c55e;'}">${concern.status}</span>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function filterConcerns(filter) {
+  currentConcernFilter = filter;
+  renderConcernsPage();
+}
+
+// === Admin Panel ===
+function renderAdminPanel() {
+  if (!['admin', 'academic_admin', 'principal'].includes(currentUser.role)) {
+    document.getElementById('page-content').innerHTML = `
+      <div class="page-header animate-fade-in">
+        <h1>Access Denied</h1>
+        <p class="text-muted">Only administrators can access this panel.</p>
+      </div>
+    `;
+    return;
+  }
+
+  document.getElementById('page-content').innerHTML = `
+    <div class="page-header animate-fade-in">
+      <div class="header-content">
+        <h1>Administration Panel</h1>
+        <p class="text-muted">Manage users, courses, and system settings</p>
+      </div>
+    </div>
+
+    <div class="stats-grid animate-fade-in">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-content">
+          <h3>${Object.keys(testUsers).length}</h3>
+          <p>Total Users</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📚</div>
+        <div class="stat-content">
+          <h3>${classData.length}</h3>
+          <p>Active Courses</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">✏️</div>
+        <div class="stat-content">
+          <h3>${assignmentSubmissions.length}</h3>
+          <p>Total Assignments</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⚠️</div>
+        <div class="stat-content">
+          <h3>${supportTickets.filter(t => t.status === 'Open').length}</h3>
+          <p>Open Support Tickets</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="glass-card animate-fade-in" style="margin-top: 2rem;">
+      <h2>User Management</h2>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${Object.values(testUsers).slice(0, 5).map(user => `
+              <tr>
+                <td><strong>${user.name}</strong></td>
+                <td>${user.email}</td>
+                <td><span class="badge">${user.role}</span></td>
+                <td><button class="btn btn-sm btn-ghost">Edit</button></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="glass-card animate-fade-in" style="margin-top: 2rem;">
+      <h2>Recent Support Tickets</h2>
+      ${supportTickets.map(ticket => `
+        <div style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <p style="margin: 0 0 0.5rem 0; font-weight: 600;">${ticket.title}</p>
+              <p class="text-muted" style="margin: 0; font-size: 0.9rem;">From: ${ticket.requester} • Status: ${ticket.status}</p>
+            </div>
+            <button class="btn btn-sm btn-primary">Review</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function openConcernForm() {
+  alert('Concern form would open in a modal. For now, use the form above to submit.');
+}
 
 // === Init ===
 function init() {
@@ -1242,7 +1686,7 @@ function init() {
             <div style="padding: 1rem; border-bottom: 1px solid var(--glass-border); margin-bottom: 0.5rem;">
               <p style="margin: 0 0 0.25rem 0; font-weight: 600;">${currentUser.name}</p>
               <p class="text-muted" style="margin: 0; font-size: 0.85rem;">${currentUser.email}</p>
-              <p class="text-muted" style="margin: 0.25rem 0 0 0; font-size: 0.8rem;">Role: <strong>${currentUser.role === 'student' ? 'Student' : 'Professor'}</strong></p>
+              <p class="text-muted" style="margin: 0.25rem 0 0 0; font-size: 0.8rem;">Role: <strong>${getRoleDisplay()}</strong></p>
             </div>
             <button onclick="navigateTo('profile')" style="width: 100%; text-align: left; padding: 0.75rem; background: none; border: none; color: var(--text-main); cursor: pointer; border-radius: 8px; transition: background 0.2s;">
               👤 View Profile
@@ -1289,7 +1733,22 @@ function init() {
           </div>
           <div class="nav-item" data-page="groups">
             <span class="nav-icon">👥</span>
-            <span class="nav-label">Study Groups</span>
+            <span class="nav-label">Class Groups</span>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-item" data-page="modules">
+            <span class="nav-icon">📖</span>
+            <span class="nav-label">Modules</span>
+          </div>
+          <div class="nav-item" data-page="lessons">
+            <span class="nav-icon">📚</span>
+            <span class="nav-label">Learning Materials</span>
+          </div>
+          <div class="nav-item" data-page="concerns">
+            <span class="nav-icon">💭</span>
+            <span class="nav-label">Support & Feedback</span>
           </div>
         </div>
 
