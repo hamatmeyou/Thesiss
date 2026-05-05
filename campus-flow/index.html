@@ -30,61 +30,67 @@
     </div>
   </header>
 
-  <!-- Sidebar Navigation -->
-  <aside class="sidebar">
-    <nav class="sidebar-nav">
-      <div class="nav-section">
-        <div class="nav-item active" data-page="dashboard">
-          <span class="nav-icon">📊</span>
-          <span class="nav-label">Dashboard</span>
+  <!-- 3-Column App Shell -->
+  <div class="app-shell">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="left-sidebar">
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-item active" data-page="dashboard">
+            <span class="nav-icon">📊</span>
+            <span class="nav-label">Dashboard</span>
+          </div>
+          <div class="nav-item" data-page="classes">
+            <span class="nav-icon">📚</span>
+            <span class="nav-label">My Classes</span>
+          </div>
+          <div class="nav-item" data-page="assignments">
+            <span class="nav-icon">✏️</span>
+            <span class="nav-label">Assignments</span>
+          </div>
+          <div class="nav-item" data-page="grades">
+            <span class="nav-icon">📈</span>
+            <span class="nav-label">Grades</span>
+          </div>
         </div>
-        <div class="nav-item" data-page="classes">
-          <span class="nav-icon">📚</span>
-          <span class="nav-label">My Classes</span>
-        </div>
-        <div class="nav-item" data-page="assignments">
-          <span class="nav-icon">✏️</span>
-          <span class="nav-label">Assignments</span>
-        </div>
-        <div class="nav-item" data-page="grades">
-          <span class="nav-icon">📈</span>
-          <span class="nav-label">Grades</span>
-        </div>
-      </div>
 
-      <div class="nav-section">
-        <div class="nav-item" data-page="messages">
-          <span class="nav-icon">💬</span>
-          <span class="nav-label">Messages</span>
-          <span class="badge">3</span>
+        <div class="nav-section">
+          <div class="nav-item" data-page="messages">
+            <span class="nav-icon">💬</span>
+            <span class="nav-label">Messages</span>
+            <span class="badge">3</span>
+          </div>
+          <div class="nav-item" data-page="schedule">
+            <span class="nav-icon">📅</span>
+            <span class="nav-label">Schedule</span>
+          </div>
+          <div class="nav-item" data-page="groups">
+            <span class="nav-icon">👥</span>
+            <span class="nav-label">Class Groups</span>
+          </div>
         </div>
-        <div class="nav-item" data-page="schedule">
-          <span class="nav-icon">📅</span>
-          <span class="nav-label">Schedule</span>
-        </div>
-        <div class="nav-item" data-page="groups">
-          <span class="nav-icon">👥</span>
-          <span class="nav-label">Class Groups</span>
-        </div>
-      </div>
 
-      <div class="nav-section">
-        <div class="nav-item" data-page="users">
-          <span class="nav-icon">👤</span>
-          <span class="nav-label">Directory</span>
+        <div class="nav-section">
+          <div class="nav-item" data-page="users">
+            <span class="nav-icon">👤</span>
+            <span class="nav-label">Directory</span>
+          </div>
+          <div class="nav-item" data-page="profile">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">Profile</span>
+          </div>
         </div>
-        <div class="nav-item" data-page="profile">
-          <span class="nav-icon">⚙️</span>
-          <span class="nav-label">Profile</span>
-        </div>
-      </div>
-    </nav>
-  </aside>
+      </nav>
+    </aside>
 
-  <!-- Main Content Area -->
-  <main class="main-content">
-    <div id="page-content"></div>
-  </main>
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <div id="page-content"></div>
+    </main>
+
+    <!-- Right Panel (role-specific) -->
+    <aside class="right-panel" id="right-panel"></aside>
+  </div>
 
   <!-- Modals -->
   <div id="modal-overlay" class="hidden" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 1000; display: flex; align-items: center; justify-content: center;">
