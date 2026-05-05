@@ -376,23 +376,54 @@ function quickLogin(username) {
 
 function handleLogin(e) {
   e.preventDefault();
-  const username = document.getElementById('login-username').value.toLowerCase();
+  const usernameOrEmail = document.getElementById('login-username').value.toLowerCase();
   const password = document.getElementById('login-password').value;
   const rememberMe = document.getElementById('remember-me').checked;
-  
-  if (testUsers[username] && testUsers[username].password === password) {
-    currentUser = { ...testUsers[username] };
+
+  // Convert username to email if it's a known test user
+  let email = usernameOrEmail;
+  if (testUsers[usernameOrEmail]) {
+    email = testUsers[usernameOrEmail].email;
+  }
+
+  // Make API call to backend
+  fetch('http://localhost:3001/api/auth/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email, password }),
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.error) {
+      alert(data.error);
+      return;
+    }
+
+    // Parse permissions from JSON string
+    const user = {
+      ...data.user,
+      permissions: JSON.parse(data.user.permissions || '[]')
+    };
+
+    currentUser = user;
     isLoggedIn = true;
-    
+
+    // Store JWT token
+    localStorage.setItem('campusflow_token', data.token);
+
     if (rememberMe) {
-      localStorage.setItem('campusflow_user', JSON.stringify(currentUser));
+      localStorage.setItem('campusflow_user', JSON.stringify(user));
       localStorage.setItem('campusflow_remembered', 'true');
     }
-    
+
     init();
-  } else {
-    alert('Invalid username or password. Please try again.');
-  }
+  })
+  .catch(error => {
+    console.error('Login error:', error);
+    alert('Login failed. Please try again.');
+  });
 }
 
 function logout() {
@@ -400,6 +431,7 @@ function logout() {
     currentUser = null;
     isLoggedIn = false;
     localStorage.removeItem('campusflow_user');
+    localStorage.removeItem('campusflow_token');
     localStorage.removeItem('campusflow_remembered');
     showLoginPage();
   }
