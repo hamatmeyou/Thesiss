@@ -493,10 +493,495 @@ function navigateTo(page) {
   }
 }
 
+/* =========================
+   Role-based sidebar + right panel
+   ========================= */
+
+function formatDateOnly(isoLike) {
+  try {
+    return new Date(isoLike).toLocaleDateString();
+  } catch {
+    return isoLike;
+  }
+}
+
+function getCountdownParts(targetDate) {
+  const now = new Date();
+  const diffMs = targetDate.getTime() - now.getTime();
+  const clamped = Math.max(0, diffMs);
+
+  const totalSeconds = Math.floor(clamped / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return { days, hours, minutes, seconds, diffMs };
+}
+
+function startCountdownTimer(targetDate, elementId) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+
+  const tick = () => {
+    const parts = getCountdownParts(targetDate);
+    if (parts.diffMs <= 0) {
+      el.textContent = 'Due now';
+      return;
+    }
+    const d = parts.days > 0 ? `${parts.days}d ` : '';
+    el.textContent = `${d}${String(parts.hours).padStart(2, '0')}:${String(parts.minutes).padStart(2, '0')}:${String(parts.seconds).padStart(2, '0')}`;
+  };
+
+  tick();
+  setInterval(tick, 1000);
+}
+
+function iconForNavKey(key) {
+  const icons = {
+    dashboard: '📊',
+    classes: '📚',
+    courses: '📚',
+    assignments: '✏️',
+    grades: '📈',
+    messages: '💬',
+    schedule: '📅',
+    users: '👤',
+    modules: '📖',
+    concerns: '💭',
+    grading: '📝',
+    timeline: '🗓️',
+    performance: '🏅',
+    issues: '⚠️'
+  };
+  return icons[key] || '•';
+}
+
+function navItem(page, label, { badgeText } = {}) {
+  const badgeHtml = badgeText ? `<span class="badge">${badgeText}</span>` : '';
+  return `
+    <div class="nav-item" data-page="${page}">
+      <span class="nav-icon">${iconForNavKey(page)}</span>
+      <span class="nav-label">${label}</span>
+      ${badgeHtml}
+    </div>
+  `;
+}
+
+/**
+ * Generates the LEFT sidebar navigation items per role.
+ * Returns innerHTML for <aside class="sidebar">.
+ */
+function generateRoleSidebar(role) {
+  // Always include Dashboard + Profile (user can navigate away but shell stays consistent)
+  const commonTop = [
+    navItem('dashboard', 'Dashboard')
+  ];
+
+  const commonBottom = [
+    navItem('users', 'Directory'),
+    navItem('profile', 'Profile')
+  ];
+
+  const roleNav = (() => {
+    switch (role) {
+      case 'admin':
+        return [
+          navItem('users', 'Users'),
+          navItem('modules', 'Courses'),
+          navItem('schedule', 'Timeline'),
+          navItem('concerns', 'Critical Issues'),
+          navItem('admin', 'System Admin')
+        ];
+      case 'principal':
+        return [
+          navItem('grades', 'Academic Performance'),
+          navItem('assignments', 'Submission Rates'),
+          navItem('concerns', 'Critical Issues'),
+          navItem('schedule', 'Key Dates')
+        ];
+      case 'academic_admin':
+        return [
+          navItem('modules', 'Courses Needing Attention'),
+          navItem('schedule', 'Deadlines'),
+          navItem('assignments', 'Submission Progress'),
+          navItem('concerns', 'Flagged Concerns')
+        ];
+      case 'program_coordinator':
+        return [
+          navItem('classes', 'Program Progress'),
+          navItem('schedule', 'Scheduled Activities'),
+          navItem('assignments', 'At-Risk Students'),
+          navItem('modules', 'Student Trends')
+        ];
+      case 'instructor':
+        return [
+          navItem('grading', 'Pending Submissions to Grade'),
+          navItem('assignments', 'Deadlines'),
+          navItem('classes', 'Recent Submissions'),
+          navItem('grades', 'Class Performance')
+        ];
+      case 'counselor':
+        return [
+          navItem('concerns', 'New Concerns', { badgeText: '1' }),
+          navItem('messages', 'High-Priority Issues'),
+          navItem('modules', 'Categories Breakdown'),
+          navItem('schedule', 'Pending Responses')
+        ];
+      case 'student':
+        return [
+          navItem('classes', 'Courses'),
+          navItem('assignments', 'Assignments'),
+          navItem('grades', 'Grades')
+        ];
+      case 'student_assistant':
+      default:
+        return [
+          navItem('assignments', 'Submissions Overview'),
+          navItem('classes', 'Class Activity'),
+          navItem('schedule', 'Deadlines'),
+          navItem('modules', 'Instructor Notes')
+        ];
+    }
+  })();
+
+  const allItems = [...commonTop, ...roleNav, ...commonBottom];
+  // Keep it tidy (dedupe by page)
+  const seen = new Set();
+  const deduped = allItems.filter((html) => {
+    const m = html.match(/data-page="([^"]+)"/);
+    const page = m ? m[1] : null;
+    if (!page || seen.has(page)) return false;
+    seen.add(page);
+    return true;
+  });
+
+  return `<nav class="sidebar-nav">${deduped.join('')}</nav>`;
+}
+
+function getInstructorGradingStats() {
+  const pending = gradingQueue.filter((x) => x.status === 'pending_grade');
+  const dueSoon = assignmentSubmissions.filter((a) => !a.submitted).slice(0, 2);
+  return { pending, dueSoon };
+}
+
+function getStudentDeadlineStats() {
+  const pending = assignmentSubmissions.filter((a) => !a.submitted);
+  const overdue = pending.filter((a) => new Date(a.dueDate).getTime() < new Date().setHours(0, 0, 0, 0));
+  const upcoming = [...pending].sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()).slice(0, 3);
+  return { pending, overdue, upcoming };
+}
+
+function generateRightPanel(role) {
+  const commonHeader = `<div style="margin-bottom: 1rem;">
+    <h3 style="margin: 0;">${role === 'student' || role === 'instructor' ? 'Action Center' : 'Quick Actions'}</h3>
+    <p class="text-muted" style="margin-top: 0.3rem;">Priority items tailored for you</p>
+  </div>`;
+
+  if (role === 'admin') {
+    return `
+      ${commonHeader}
+      <div class="right-panel-card">
+        <h3>System Overview</h3>
+        <div class="metrics-card">
+          <div class="status-badge">Users</div>
+          <div class="countdown-timer">${Object.keys(testUsers).length}</div>
+          <div class="status-badge">Courses</div>
+          <div class="countdown-timer">${classData.length}</div>
+        </div>
+        <div class="card-action">
+          <button class="btn btn-ghost btn-sm" onclick="navigateTo('admin')">Open Admin Panel</button>
+        </div>
+      </div>
+      <div class="right-panel-card">
+        <h3>Pending Issues</h3>
+        <div class="status-badge">Open Tickets: ${supportTickets.filter(t => t.status === 'Open').length}</div>
+        <div style="margin-top: 0.75rem;">
+          <button class="btn btn-primary btn-sm" onclick="navigateTo('concerns')">Review Concerns</button>
+        </div>
+      </div>
+      <div class="right-panel-card">
+        <h3>Active Timelines</h3>
+        <div class="text-muted" style="font-size: 0.9rem;">Next key dates from Schedule</div>
+        <div style="margin-top: 0.75rem;">
+          <button class="btn btn-ghost btn-sm" onclick="navigateTo('schedule')">View Timeline</button>
+        </div>
+      </div>
+      <div class="right-panel-card">
+        <h3>Recent Activity</h3>
+        <div class="text-muted" style="font-size: 0.9rem;">Latest grading & feedback updates</div>
+      </div>
+    `;
+  }
+
+  if (role === 'principal') {
+    return `
+      ${commonHeader}
+      <div class="right-panel-card">
+        <h3>Academic Performance</h3>
+        <div class="metrics-card">
+          <div class="status-badge">Top Grade</div>
+          <div class="countdown-timer">A</div>
+          <div class="status-badge">Avg GPA</div>
+          <div class="countdown-timer">3.42</div>
+        </div>
+        <div class="card-action">
+          <button class="btn btn-primary btn-sm" onclick="navigateTo('grades')">Open Grades</button>
+        </div>
+      </div>
+      <div class="right-panel-card">
+        <h3>Submission Rates</h3>
+        <div class="text-muted" style="font-size: 0.9rem;">Track pending vs submitted</div>
+        <div class="card-action">
+          <button class="btn btn-ghost btn-sm" onclick="navigateTo('assignments')">See Assignments</button>
+        </div>
+      </div>
+      <div class="right-panel-card">
+        <h3>Critical Issues</h3>
+        <div class="status-badge">Open Concerns: ${supportTickets.filter(t => t.status === 'Open').length}</div>
+        <div class="card-action">
+          <button class="btn btn-primary btn-sm" onclick="navigateTo('concerns')">Triage Issues</button>
+        </div>
+      </div>
+      <div class="right-panel-card">
+        <h3>Key Dates</h3>
+        <div class="card-action">
+          <button class="btn btn-ghost btn-sm" onclick="navigateTo('schedule')">Open Key Dates</button>
+        </div>
+      </div>
+    `;
+  }
+
+  if (role === 'academic_admin') {
+    return `
+      ${commonHeader}
+      <div class="right-panel-card">
+        <h3>Courses Needing Attention</h3>
+        <div class="status-badge">At Risk: 2</div>
+      </div>
+      <div class="right-panel-card">
+        <h3>Deadlines</h3>
+        <div class="text-muted" style="font-size: 0.9rem;">See upcoming deadlines in Schedule</div>
+        <div class="card-action">
+          <button class="btn btn-primary btn-sm" onclick="navigateTo('schedule')">Open Deadlines</button>
+        </div>
+      </div>
+      <div class="right-panel-card">
+        <h3>Submission Progress</h3>
+        <div class="status-badge">Pending: ${assignmentSubmissions.filter(a => !a.submitted).length}</div>
+      </div>
+      <div class="right-panel-card">
+        <h3>Flagged Concerns</h3>
+        <div class="status-badge">Open: ${supportTickets.filter(t => t.status === 'Open').length}</div>
+        <div class="card-action">
+          <button class="btn btn-ghost btn-sm" onclick="navigateTo('concerns')">Review Flags</button>
+        </div>
+      </div>
+    `;
+  }
+
+  if (role === 'program_coordinator') {
+    return `
+      ${commonHeader}
+      <div class="right-panel-card">
+        <h3>Program Progress</h3>
+        <div class="status-badge">On Track: 4</div>
+        <div class="card-action">
+          <button class="btn btn-ghost btn-sm" onclick="navigateTo('classes')">View Courses</button>
+        </div>
+      </div>
+      <div class="right-panel-card">
+        <h3>Student Trends</h3>
+        <div class="text-muted" style="font-size: 0.9rem;">Monitor performance trends</div>
+        <div class="card-action">
+          <button class="btn btn-primary btn-sm" onclick="navigateTo('grades')">Open Trends</button>
+        </div>
+      </div>
+      <div class="right-panel-card">
+        <h3>Scheduled Activities</h3>
+        <div class="card-action">
+          <button class="btn btn-ghost btn-sm" onclick="navigateTo('schedule')">Open Calendar</button>
+        </div>
+      </div>
+      <div class="right-panel-card">
+        <h3>At-Risk Students</h3>
+        <div class="status-badge">Watchlist: 3</div>
+        <div class="card-action">
+          <button class="btn btn-primary btn-sm" onclick="navigateTo('assignments')">Review Work</button>
+        </div>
+      </div>
+    `;
+  }
+
+  if (role === 'instructor') {
+    const stats = getInstructorGradingStats();
+    const topQueue = stats.pending.slice(0, 4);
+    return `
+      ${commonHeader}
+      <div class="right-panel-card">
+        <h3>Pending Submissions to Grade</h3>
+        <div class="status-badge">Queue: ${stats.pending.length}</div>
+        <div style="margin-top: 0.75rem; display:flex; flex-direction: column; gap: 0.5rem;">
+          ${topQueue.map((q) => `
+            <div style="display:flex; justify-content: space-between; gap: 0.5rem; align-items:center;">
+              <span style="font-weight: 600;">${q.studentName}</span>
+              <span class="text-muted" style="font-size:0.85rem;">${formatDateOnly(q.submittedAt)}</span>
+            </div>
+          `).join('')}
+        </div>
+        <div class="card-action">
+          <button class="btn btn-primary btn-sm" onclick="navigateTo('grading')">Start Grading</button>
+        </div>
+      </div>
+      <div class="right-panel-card">
+        <h3>Deadlines</h3>
+        <div class="text-muted" style="font-size:0.9rem;">Next due: ${stats.dueSoon[0] ? formatDateOnly(stats.dueSoon[0].dueDate) : '—'}</div>
+        <div class="card-action">
+          <button class="btn btn-ghost btn-sm" onclick="navigateTo('assignments')">View Assignments</button>
+        </div>
+      </div>
+      <div class="right-panel-card">
+        <h3>Recent Submissions</h3>
+        <div class="text-muted" style="font-size:0.9rem;">Check grading queue for latest work</div>
+      </div>
+      <div class="right-panel-card">
+        <h3>Class Performance</h3>
+        <div class="status-badge">Avg: A-/A</div>
+        <div class="card-action">
+          <button class="btn btn-ghost btn-sm" onclick="navigateTo('grades')">Open Performance</button>
+        </div>
+      </div>
+    `;
+  }
+
+  if (role === 'counselor') {
+    return `
+      ${commonHeader}
+      <div class="right-panel-card">
+        <h3>New Concerns</h3>
+        <div class="status-badge">Open: ${supportTickets.filter(t => t.status === 'Open').length}</div>
+        <div class="card-action">
+          <button class="btn btn-primary btn-sm" onclick="navigateTo('concerns')">Review New</button>
+        </div>
+      </div>
+      <div class="right-panel-card">
+        <h3>High-Priority Issues</h3>
+        <div class="status-badge">High: ${supportTickets.filter(t => t.priority === 'High').length}</div>
+      </div>
+      <div class="right-panel-card">
+        <h3>Categories Breakdown</h3>
+        <div class="text-muted" style="font-size:0.9rem;">Course / assignment category trends</div>
+        <div class="card-action">
+          <button class="btn btn-ghost btn-sm" onclick="navigateTo('modules')">Explore Modules</button>
+        </div>
+      </div>
+      <div class="right-panel-card">
+        <h3>Pending Responses</h3>
+        <div class="text-muted" style="font-size:0.9rem;">Follow up on answered vs open</div>
+        <div class="card-action">
+          <button class="btn btn-primary btn-sm" onclick="navigateTo('messages')">Open Messages</button>
+        </div>
+      </div>
+    `;
+  }
+
+  if (role === 'student') {
+    const stats = getStudentDeadlineStats();
+    const next = stats.upcoming[0];
+    const targetDate = next ? new Date(`${next.dueDate}T23:59:59`) : null;
+    return `
+      ${commonHeader}
+      <div class="right-panel-card">
+        <h3>Upcoming Deadlines</h3>
+        <div class="status-badge">Pending: ${stats.pending.length}</div>
+        <div style="margin-top: 0.75rem;">
+          <div class="text-muted" style="font-size:0.9rem;">Next up</div>
+          <div style="font-weight:800; margin-top: 0.25rem;">${next ? next.title : 'No upcoming deadlines'}</div>
+          <div class="text-muted" style="font-size:0.9rem; margin-top: 0.25rem;">Due ${next ? formatDateOnly(next.dueDate) : '—'}</div>
+          <div class="countdown-timer" id="deadline-countdown">${targetDate ? '' : '—'}</div>
+        </div>
+        <div class="card-action">
+          <button class="btn btn-primary btn-sm" onclick="navigateTo('assignments')">View Assignments</button>
+        </div>
+      </div>
+      <div class="right-panel-card">
+        <h3>Pending Assignments</h3>
+        <div class="status-badge">Remaining: ${stats.pending.length}</div>
+      </div>
+      <div class="right-panel-card">
+        <h3>Recent Grades</h3>
+        <div class="text-muted" style="font-size:0.9rem;">Your latest results at a glance</div>
+        <div class="card-action">
+          <button class="btn btn-ghost btn-sm" onclick="navigateTo('grades')">Open Grades</button>
+        </div>
+      </div>
+      <div class="right-panel-card">
+        <h3>Announcements</h3>
+        <div class="text-muted" style="font-size:0.9rem;">Stay updated via Messages</div>
+        <div class="card-action">
+          <button class="btn btn-primary btn-sm" onclick="navigateTo('messages')">Open Messages</button>
+        </div>
+      </div>
+      <div class="right-panel-card">
+        <h3>Late Submissions Warning</h3>
+        <div class="status-badge" style="border-color: rgba(239, 68, 68, 0.35); color: #ef4444;">
+          Overdue: ${stats.overdue.length}
+        </div>
+      </div>
+    `;
+  }
+
+  // student_assistant
+  return `
+    ${commonHeader}
+    <div class="right-panel-card">
+      <h3>Submissions Overview</h3>
+      <div class="status-badge">Pending: ${assignmentSubmissions.filter(a => !a.submitted).length}</div>
+      <div class="card-action">
+        <button class="btn btn-primary btn-sm" onclick="navigateTo('assignments')">Open Work</button>
+      </div>
+    </div>
+    <div class="right-panel-card">
+      <h3>Class Activity</h3>
+      <div class="text-muted" style="font-size:0.9rem;">Student engagement metrics</div>
+    </div>
+    <div class="right-panel-card">
+      <h3>Deadlines</h3>
+      <div class="text-muted" style="font-size:0.9rem;">Use Schedule for upcoming dates</div>
+      <div class="card-action">
+        <button class="btn btn-ghost btn-sm" onclick="navigateTo('schedule')">Open Schedule</button>
+      </div>
+    </div>
+    <div class="right-panel-card">
+      <h3>Instructor Notes</h3>
+      <div class="text-muted" style="font-size:0.9rem;">Quick access to course guidance</div>
+      <div class="card-action">
+        <button class="btn btn-primary btn-sm" onclick="navigateTo('modules')">Open Modules</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderRightPanelForRole(role) {
+  const rp = document.getElementById('right-panel') || document.querySelector('.right-panel');
+  if (!rp) return;
+
+  rp.innerHTML = generateRightPanel(role);
+
+  // Start countdown only for student (priority)
+  if (role === 'student') {
+    const next = assignmentSubmissions.filter((a) => !a.submitted).sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())[0];
+    if (next) {
+      const targetDate = new Date(`${next.dueDate}T23:59:59`);
+      startCountdownTimer(targetDate, 'deadline-countdown');
+    }
+  }
+}
+
 // === Dashboard ===
 function renderDashboard() {
   let dashboardContent = '';
-  
+
   if (currentUser.role === 'admin') {
     dashboardContent = renderAdminDashboard();
   } else if (currentUser.role === 'principal') {
@@ -514,8 +999,9 @@ function renderDashboard() {
   } else {
     dashboardContent = renderStudentDashboard();
   }
-  
+
   document.getElementById('page-content').innerHTML = dashboardContent;
+  renderRightPanelForRole(currentUser.role);
 }
 
 // Admin Dashboard
@@ -1663,6 +2149,648 @@ function openConcernForm() {
   alert('Concern form would open in a modal. For now, use the form above to submit.');
 }
 
+/* =========================
+   ROLE-BASED DASHBOARD SYSTEM
+   ========================= */
+
+/**
+ * Generate role-specific sidebar HTML
+ * @param {string} role - User role
+ * @returns {string} HTML for sidebar navigation
+ */
+function generateRoleSidebar(role) {
+  const sidebarConfig = {
+    admin: [
+      { section: 'Management', items: [
+        { page: 'dashboard', label: 'Dashboard', icon: '📊' },
+        { page: 'users', label: 'User Management', icon: '👥' },
+        { page: 'courses', label: 'Courses', icon: '📚' },
+        { page: 'timeline', label: 'Timeline & Deadlines', icon: '📅' }
+      ]},
+      { section: 'Operations', items: [
+        { page: 'concerns', label: 'Concerns & Issues', icon: '💭' },
+        { page: 'reports', label: 'Reports', icon: '📊' },
+        { page: 'messages', label: 'Messages', icon: '💬' }
+      ]},
+      { section: 'Settings', items: [
+        { page: 'profile', label: 'Profile', icon: '⚙️' }
+      ]}
+    ],
+    principal: [
+      { section: 'Oversight', items: [
+        { page: 'dashboard', label: 'Dashboard', icon: '📊' },
+        { page: 'courses', label: 'All Courses', icon: '📚' },
+        { page: 'reports', label: 'Academic Reports', icon: '📈' },
+        { page: 'concerns', label: 'Concerns', icon: '💭' }
+      ]},
+      { section: 'Monitoring', items: [
+        { page: 'messages', label: 'Messages', icon: '💬' },
+        { page: 'admin', label: 'System Health', icon: '⚡' }
+      ]},
+      { section: 'Account', items: [
+        { page: 'profile', label: 'Profile', icon: '⚙️' }
+      ]}
+    ],
+    academic_admin: [
+      { section: 'Academic', items: [
+        { page: 'dashboard', label: 'Dashboard', icon: '📊' },
+        { page: 'courses', label: 'Manage Courses', icon: '📚' },
+        { page: 'users', label: 'Faculty', icon: '👤' },
+        { page: 'schedule', label: 'Schedule', icon: '📅' }
+      ]},
+      { section: 'Monitoring', items: [
+        { page: 'submissions', label: 'Submissions', icon: '📝' },
+        { page: 'concerns', label: 'Concerns', icon: '💭' },
+        { page: 'messages', label: 'Messages', icon: '💬' }
+      ]},
+      { section: 'Account', items: [
+        { page: 'profile', label: 'Profile', icon: '⚙️' }
+      ]}
+    ],
+    program_coordinator: [
+      { section: 'Program', items: [
+        { page: 'dashboard', label: 'Dashboard', icon: '📊' },
+        { page: 'courses', label: 'Program Courses', icon: '📚' },
+        { page: 'users', label: 'Students', icon: '👥' },
+        { page: 'schedule', label: 'Deadlines', icon: '📅' }
+      ]},
+      { section: 'Monitoring', items: [
+        { page: 'progress', label: 'Progress Tracking', icon: '📈' },
+        { page: 'concerns', label: 'Concerns', icon: '💭' },
+        { page: 'messages', label: 'Messages', icon: '💬' }
+      ]},
+      { section: 'Account', items: [
+        { page: 'profile', label: 'Profile', icon: '⚙️' }
+      ]}
+    ],
+    instructor: [
+      { section: 'Teaching', items: [
+        { page: 'dashboard', label: 'Dashboard', icon: '📊' },
+        { page: 'classes', label: 'My Classes', icon: '📚' },
+        { page: 'grading', label: 'Grading Queue', icon: '✏️' },
+        { page: 'schedule', label: 'Schedule', icon: '📅' }
+      ]},
+      { section: 'Interaction', items: [
+        { page: 'messages', label: 'Messages', icon: '💬' },
+        { page: 'submissions', label: 'Submissions', icon: '📥' }
+      ]},
+      { section: 'Account', items: [
+        { page: 'profile', label: 'Profile', icon: '⚙️' }
+      ]}
+    ],
+    counselor: [
+      { section: 'Support', items: [
+        { page: 'dashboard', label: 'Dashboard', icon: '📊' },
+        { page: 'concerns', label: 'Concerns Inbox', icon: '💭' },
+        { page: 'users', label: 'Students', icon: '👥' },
+        { page: 'schedule', label: 'Meetings', icon: '📅' }
+      ]},
+      { section: 'Communication', items: [
+        { page: 'messages', label: 'Messages', icon: '💬' },
+        { page: 'reports', label: 'Reports', icon: '📊' }
+      ]},
+      { section: 'Account', items: [
+        { page: 'profile', label: 'Profile', icon: '⚙️' }
+      ]}
+    ],
+    student_assistant: [
+      { section: 'Classroom', items: [
+        { page: 'dashboard', label: 'Dashboard', icon: '📊' },
+        { page: 'classes', label: 'Classes', icon: '📚' },
+        { page: 'submissions', label: 'Submissions', icon: '📥' },
+        { page: 'schedule', label: 'Deadlines', icon: '📅' }
+      ]},
+      { section: 'Collaboration', items: [
+        { page: 'messages', label: 'Messages', icon: '💬' }
+      ]},
+      { section: 'Account', items: [
+        { page: 'profile', label: 'Profile', icon: '⚙️' }
+      ]}
+    ],
+    student: [
+      { section: 'Learning', items: [
+        { page: 'dashboard', label: 'Dashboard', icon: '📊' },
+        { page: 'classes', label: 'My Classes', icon: '📚' },
+        { page: 'assignments', label: 'Assignments', icon: '✏️' },
+        { page: 'grades', label: 'Grades', icon: '📈' }
+      ]},
+      { section: 'Community', items: [
+        { page: 'groups', label: 'Study Groups', icon: '👥' },
+        { page: 'messages', label: 'Messages', icon: '💬' },
+        { page: 'schedule', label: 'Schedule', icon: '📅' }
+      ]},
+      { section: 'Account', items: [
+        { page: 'profile', label: 'Profile', icon: '⚙️' }
+      ]}
+    ]
+  };
+
+  const config = sidebarConfig[role] || sidebarConfig.student;
+  
+  let html = '<nav class="sidebar-nav">';
+  config.forEach(section => {
+    html += `<div class="nav-section"><h3 class="nav-section-title">${section.section}</h3>`;
+    section.items.forEach(item => {
+      const isActive = item.page === currentPage ? 'active' : '';
+      html += `<div class="nav-item ${isActive}" data-page="${item.page}">
+        <span class="nav-icon">${item.icon}</span>
+        <span class="nav-label">${item.label}</span>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  html += '</nav>';
+  return html;
+}
+
+/**
+ * Generate role-specific right panel HTML
+ * @param {string} role - User role
+ * @returns {string} HTML for right panel
+ */
+function generateRightPanel(role) {
+  const panelGenerators = {
+    admin: generateAdminRightPanel,
+    principal: generatePrincipalRightPanel,
+    academic_admin: generateAcademicAdminRightPanel,
+    program_coordinator: generateCoordinatorRightPanel,
+    instructor: generateInstructorRightPanel,
+    counselor: generateCounselorRightPanel,
+    student_assistant: generateStudentAssistantRightPanel,
+    student: generateStudentRightPanel
+  };
+
+  const generator = panelGenerators[role] || panelGenerators.student;
+  return generator();
+}
+
+// === Right Panel Generators ===
+
+function generateAdminRightPanel() {
+  return `
+    <div class="right-panel-content animate-fade-in">
+      <h3 class="right-panel-title">System Overview</h3>
+      
+      <div class="right-panel-card">
+        <div class="card-label">Total Users</div>
+        <div class="card-value">1,234</div>
+        <div class="card-subtext">+12 this week</div>
+      </div>
+
+      <div class="right-panel-card">
+        <div class="card-label">Active Courses</div>
+        <div class="card-value">45</div>
+        <div class="card-subtext">8 starting soon</div>
+      </div>
+
+      <h3 class="right-panel-title" style="margin-top: 1.5rem;">Pending Issues</h3>
+      
+      <div class="right-panel-card urgent">
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <span class="status-badge urgent"></span>
+          <span>2 unresolved concerns</span>
+        </div>
+      </div>
+
+      <h3 class="right-panel-title" style="margin-top: 1.5rem;">Recent Activity</h3>
+      
+      <div class="activity-feed">
+        <div class="activity-item">
+          <span>👤 New user registered</span>
+          <span class="activity-time">2 min ago</span>
+        </div>
+        <div class="activity-item">
+          <span>📊 Course created</span>
+          <span class="activity-time">15 min ago</span>
+        </div>
+        <div class="activity-item">
+          <span>⚠️ Support ticket opened</span>
+          <span class="activity-time">1 hour ago</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function generatePrincipalRightPanel() {
+  return `
+    <div class="right-panel-content animate-fade-in">
+      <h3 class="right-panel-title">Academic Performance</h3>
+      
+      <div class="right-panel-card">
+        <div class="card-label">Avg Student GPA</div>
+        <div class="card-value">3.42</div>
+        <div class="card-subtext">↑ 0.05 from last term</div>
+      </div>
+
+      <div class="right-panel-card">
+        <div class="card-label">On-Time Submissions</div>
+        <div class="card-value">94%</div>
+        <div class="card-subtext">↑ 2% improvement</div>
+      </div>
+
+      <h3 class="right-panel-title" style="margin-top: 1.5rem;">Critical Alerts</h3>
+      
+      <div class="right-panel-card urgent">
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <span class="status-badge urgent"></span>
+          <span>3 unresolved concerns</span>
+        </div>
+      </div>
+
+      <h3 class="right-panel-title" style="margin-top: 1.5rem;">Key Academic Dates</h3>
+      
+      <div class="deadline-item">
+        <span>📌 Final exams start</span>
+        <span>May 15</span>
+      </div>
+      <div class="deadline-item">
+        <span>📌 Grade submission</span>
+        <span>May 25</span>
+      </div>
+    </div>
+  `;
+}
+
+function generateAcademicAdminRightPanel() {
+  return `
+    <div class="right-panel-content animate-fade-in">
+      <h3 class="right-panel-title">Courses Needing Attention</h3>
+      
+      <div class="right-panel-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <span>CS-402 Review</span>
+          <span class="status-badge warning">⚠️</span>
+        </div>
+        <div class="card-subtext">8 pending submissions</div>
+      </div>
+
+      <h3 class="right-panel-title" style="margin-top: 1.5rem;">Upcoming Deadlines</h3>
+      
+      <div class="countdown-card">
+        <div class="countdown-label">Next deadline in:</div>
+        <div class="countdown-timer" id="countdown-academic">2d 05:30:45</div>
+      </div>
+
+      <h3 class="right-panel-title" style="margin-top: 1.5rem;">Submission Progress</h3>
+      
+      <div class="progress-item">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+          <span>CS-402</span>
+          <span>24/30</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: 80%;"></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function generateCoordinatorRightPanel() {
+  return `
+    <div class="right-panel-content animate-fade-in">
+      <h3 class="right-panel-title">Program Progress</h3>
+      
+      <div class="right-panel-card">
+        <div class="card-label">Active Courses</div>
+        <div class="card-value">12</div>
+        <div class="card-subtext">Enrolled: 450 students</div>
+      </div>
+
+      <h3 class="right-panel-title" style="margin-top: 1.5rem;">At-Risk Students</h3>
+      
+      <div class="right-panel-card warning">
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <span class="status-badge warning">⚠️</span>
+          <span>5 students below threshold</span>
+        </div>
+      </div>
+
+      <h3 class="right-panel-title" style="margin-top: 1.5rem;">Upcoming Events</h3>
+      
+      <div class="deadline-item">
+        <span>🎓 Thesis Defense Schedule</span>
+        <span>May 20</span>
+      </div>
+      <div class="deadline-item">
+        <span>📅 Final Projects Due</span>
+        <span>May 28</span>
+      </div>
+    </div>
+  `;
+}
+
+function generateInstructorRightPanel() {
+  return `
+    <div class="right-panel-content animate-fade-in">
+      <h3 class="right-panel-title">⏱️ Grading Queue</h3>
+      
+      <div class="right-panel-card urgent">
+        <div style="font-weight: 600; margin-bottom: 0.5rem;">23 Submissions</div>
+        <div class="card-subtext">Waiting for grading</div>
+        <button class="btn btn-sm btn-primary" onclick="navigateTo('grading')" style="width: 100%; margin-top: 0.75rem;">Start Grading</button>
+      </div>
+
+      <h3 class="right-panel-title" style="margin-top: 1.5rem;">Next Deadline</h3>
+      
+      <div class="countdown-card">
+        <div class="countdown-label">Assignment due in:</div>
+        <div class="countdown-timer" id="countdown-instructor">1d 12:45:30</div>
+      </div>
+
+      <h3 class="right-panel-title" style="margin-top: 1.5rem;">Recent Submissions</h3>
+      
+      <div class="submission-feed">
+        <div class="submission-item">
+          <span>📝 Jordan Smith</span>
+          <span class="activity-time">5 min ago</span>
+        </div>
+        <div class="submission-item">
+          <span>📝 Casey Brown</span>
+          <span class="activity-time">12 min ago</span>
+        </div>
+        <div class="submission-item">
+          <span>📝 Alex Morgan</span>
+          <span class="activity-time">28 min ago</span>
+        </div>
+      </div>
+
+      <h3 class="right-panel-title" style="margin-top: 1.5rem;">Class Overview</h3>
+      
+      <div class="metrics-row">
+        <div class="metric-mini">
+          <div>Enrolled</div>
+          <div class="metric-value">45</div>
+        </div>
+        <div class="metric-mini">
+          <div>Avg Grade</div>
+          <div class="metric-value">A-</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function generateCounselorRightPanel() {
+  return `
+    <div class="right-panel-content animate-fade-in">
+      <h3 class="right-panel-title">New Concerns</h3>
+      
+      <div class="right-panel-card urgent">
+        <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
+          <span class="status-badge urgent">🔴</span>
+          <span style="font-weight: 600;">3 New Issues</span>
+        </div>
+        <div class="card-subtext">1 marked high-priority</div>
+      </div>
+
+      <h3 class="right-panel-title" style="margin-top: 1.5rem;">High-Priority Issues</h3>
+      
+      <div class="concern-list">
+        <div class="concern-item">
+          <span>🚨 Academic Stress</span>
+          <span class="concern-time">2 hours ago</span>
+        </div>
+        <div class="concern-item">
+          <span>💔 Personal Issues</span>
+          <span class="concern-time">5 hours ago</span>
+        </div>
+      </div>
+
+      <h3 class="right-panel-title" style="margin-top: 1.5rem;">Pending Responses</h3>
+      
+      <div class="right-panel-card">
+        <div class="card-label">Aging Issues</div>
+        <div class="card-value">7</div>
+        <div class="card-subtext">Avg age: 2.5 days</div>
+      </div>
+    </div>
+  `;
+}
+
+function generateStudentAssistantRightPanel() {
+  return `
+    <div class="right-panel-content animate-fade-in">
+      <h3 class="right-panel-title">Submissions Overview</h3>
+      
+      <div class="right-panel-card">
+        <div class="card-label">Pending Review</div>
+        <div class="card-value">8</div>
+        <div class="card-subtext">From 4 classes</div>
+      </div>
+
+      <h3 class="right-panel-title" style="margin-top: 1.5rem;">Class Activity</h3>
+      
+      <div class="activity-feed">
+        <div class="activity-item">
+          <span>📝 New submission</span>
+          <span class="activity-time">10 min ago</span>
+        </div>
+        <div class="activity-item">
+          <span>💬 3 new messages</span>
+          <span class="activity-time">25 min ago</span>
+        </div>
+        <div class="activity-item">
+          <span>✅ Grading complete</span>
+          <span class="activity-time">1 hour ago</span>
+        </div>
+      </div>
+
+      <h3 class="right-panel-title" style="margin-top: 1.5rem;">Upcoming Deadlines</h3>
+      
+      <div class="deadline-item">
+        <span>Project Submission</span>
+        <span>May 12</span>
+      </div>
+    </div>
+  `;
+}
+
+function generateStudentRightPanel() {
+  return `
+    <div class="right-panel-content animate-fade-in">
+      <h3 class="right-panel-title">📌 Upcoming Deadlines</h3>
+      
+      <div class="countdown-card">
+        <div class="countdown-label">Next deadline in:</div>
+        <div class="countdown-timer" id="countdown-student">3d 18:22:15</div>
+      </div>
+
+      <h3 class="right-panel-title" style="margin-top: 1.5rem;">Pending Assignments</h3>
+      
+      <div class="assignment-list">
+        <div class="assignment-item">
+          <span>Advanced Web Systems</span>
+          <span class="due-badge">Due in 2d</span>
+        </div>
+        <div class="assignment-item">
+          <span>AI Project Proposal</span>
+          <span class="due-badge">Due in 4d</span>
+        </div>
+      </div>
+
+      <h3 class="right-panel-title" style="margin-top: 1.5rem;">Recent Grades</h3>
+      
+      <div class="grade-item">
+        <span>CS-402 Midterm</span>
+        <span class="grade-badge">A-</span>
+      </div>
+      <div class="grade-item">
+        <span>CS-301 Project</span>
+        <span class="grade-badge">A</span>
+      </div>
+
+      <h3 class="right-panel-title" style="margin-top: 1.5rem;">Messages</h3>
+      
+      <div class="right-panel-card">
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <span class="badge">3</span>
+          <span>Unread messages</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Main dashboard render function - routes to role-specific dashboard
+ */
+function renderDashboard() {
+  // Update sidebar with role-specific items
+  const sidebar = document.querySelector('.sidebar');
+  if (sidebar) {
+    sidebar.innerHTML = generateRoleSidebar(currentUser.role);
+    // Reattach click handlers to new nav items
+    initNav();
+  }
+
+  // Update right panel with role-specific content
+  const rightPanel = document.querySelector('.right-panel');
+  if (rightPanel) {
+    rightPanel.innerHTML = generateRightPanel(currentUser.role);
+    
+    // Start countdown timers
+    const academicCountdown = document.getElementById('countdown-academic');
+    const instructorCountdown = document.getElementById('countdown-instructor');
+    const studentCountdown = document.getElementById('countdown-student');
+    
+    if (academicCountdown) {
+      const targetDate = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000 + 5 * 60 * 60 * 1000 + 30 * 60 * 1000 + 45 * 1000);
+      startCountdownTimer(targetDate, 'countdown-academic');
+    }
+    if (instructorCountdown) {
+      const targetDate = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000 + 12 * 60 * 60 * 1000 + 45 * 60 * 1000 + 30 * 1000);
+      startCountdownTimer(targetDate, 'countdown-instructor');
+    }
+    if (studentCountdown) {
+      const targetDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000 + 18 * 60 * 60 * 1000 + 22 * 60 * 1000 + 15 * 1000);
+      startCountdownTimer(targetDate, 'countdown-student');
+    }
+  }
+
+  // Render role-specific dashboard content
+  document.getElementById('page-content').innerHTML = `
+    <div class="page-header animate-fade-in">
+      <div class="header-content">
+        <h1>Welcome back, ${currentUser.name}! 👋</h1>
+        <p class="text-muted">${getRoleDisplay()} Dashboard</p>
+      </div>
+    </div>
+
+    <div class="stats-grid animate-fade-in">
+      <div class="stat-card">
+        <div class="stat-icon">📚</div>
+        <div class="stat-content">
+          <h3>4</h3>
+          <p>Active Classes</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">✏️</div>
+        <div class="stat-content">
+          <h3>2</h3>
+          <p>Pending Assignments</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📈</div>
+        <div class="stat-content">
+          <h3>3.72</h3>
+          <p>Current GPA</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💬</div>
+        <div class="stat-content">
+          <h3>3</h3>
+          <p>Unread Messages</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="glass-card animate-fade-in" style="margin-top: 2rem;">
+      <h2>My Courses</h2>
+      <div class="launchpad-grid">
+        <div class="class-card animate-fade-in">
+          <div class="class-header">
+            <h3>Advanced Web Systems</h3>
+            <span class="class-code">CS-402</span>
+          </div>
+          <p class="text-muted">Instructor: Dr. Robert Chen</p>
+          <button class="btn btn-primary btn-sm" style="width: 100%; margin-top: 1rem;">Open Course</button>
+        </div>
+        <div class="class-card animate-fade-in">
+          <div class="class-header">
+            <h3>Artificial Intelligence</h3>
+            <span class="class-code">CS-301</span>
+          </div>
+          <p class="text-muted">Instructor: Dr. Patricia Williams</p>
+          <button class="btn btn-primary btn-sm" style="width: 100%; margin-top: 1rem;">Open Course</button>
+        </div>
+        <div class="class-card animate-fade-in">
+          <div class="class-header">
+            <h3>Cloud Infrastructure</h3>
+            <span class="class-code">IT-305</span>
+          </div>
+          <p class="text-muted">Instructor: Dr. Michael Henderson</p>
+          <button class="btn btn-primary btn-sm" style="width: 100%; margin-top: 1rem;">Open Course</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="glass-card animate-fade-in" style="margin-top: 2rem;">
+      <h2>Upcoming Assignments</h2>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Assignment</th>
+              <th>Course</th>
+              <th>Due Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Midterm Exam</strong></td>
+              <td>CS-402</td>
+              <td>May 15, 2026</td>
+              <td><span class="badge" style="background: #f59e0b;">Pending</span></td>
+            </tr>
+            <tr>
+              <td><strong>Project Proposal</strong></td>
+              <td>CS-301</td>
+              <td>May 18, 2026</td>
+              <td><span class="badge" style="background: #f59e0b;">In Progress</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
 // === Init ===
 function init() {
   // Render the full page
@@ -1699,76 +2827,19 @@ function init() {
       </div>
     </header>
 
-    <!-- Sidebar Navigation -->
-    <aside class="sidebar">
-      <nav class="sidebar-nav">
-        <div class="nav-section">
-          <div class="nav-item active" data-page="dashboard">
-            <span class="nav-icon">📊</span>
-            <span class="nav-label">Dashboard</span>
-          </div>
-          <div class="nav-item" data-page="classes">
-            <span class="nav-icon">📚</span>
-            <span class="nav-label">My Classes</span>
-          </div>
-          <div class="nav-item" data-page="assignments">
-            <span class="nav-icon">✏️</span>
-            <span class="nav-label">Assignments</span>
-          </div>
-          <div class="nav-item" data-page="grades">
-            <span class="nav-icon">📈</span>
-            <span class="nav-label">Grades</span>
-          </div>
-        </div>
+    <!-- 3-Column App Shell -->
+    <div class="app-shell">
+      <!-- Sidebar Navigation -->
+      <aside class="sidebar" id="left-sidebar"></aside>
 
-        <div class="nav-section">
-          <div class="nav-item" data-page="messages">
-            <span class="nav-icon">💬</span>
-            <span class="nav-label">Messages</span>
-            <span class="badge">3</span>
-          </div>
-          <div class="nav-item" data-page="schedule">
-            <span class="nav-icon">📅</span>
-            <span class="nav-label">Schedule</span>
-          </div>
-          <div class="nav-item" data-page="groups">
-            <span class="nav-icon">👥</span>
-            <span class="nav-label">Class Groups</span>
-          </div>
-        </div>
+      <!-- Main Content Area -->
+      <main class="main-content">
+        <div id="page-content"></div>
+      </main>
 
-        <div class="nav-section">
-          <div class="nav-item" data-page="modules">
-            <span class="nav-icon">📖</span>
-            <span class="nav-label">Modules</span>
-          </div>
-          <div class="nav-item" data-page="lessons">
-            <span class="nav-icon">📚</span>
-            <span class="nav-label">Learning Materials</span>
-          </div>
-          <div class="nav-item" data-page="concerns">
-            <span class="nav-icon">💭</span>
-            <span class="nav-label">Support & Feedback</span>
-          </div>
-        </div>
-
-        <div class="nav-section">
-          <div class="nav-item" data-page="users">
-            <span class="nav-icon">👤</span>
-            <span class="nav-label">Directory</span>
-          </div>
-          <div class="nav-item" data-page="profile">
-            <span class="nav-icon">⚙️</span>
-            <span class="nav-label">Profile</span>
-          </div>
-        </div>
-      </nav>
-    </aside>
-
-    <!-- Main Content Area -->
-    <main class="main-content">
-      <div id="page-content"></div>
-    </main>
+      <!-- Right Panel (role-specific) -->
+      <aside class="right-panel" id="right-panel"></aside>
+    </div>
 
     <!-- Modals -->
     <div id="modal-overlay" class="hidden" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 1000; display: flex; align-items: center; justify-content: center;">
