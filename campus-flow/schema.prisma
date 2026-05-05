@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  academic_admin
+  program_coordinator
+  instructor
+  counselor
+  student_assistant
+  student
+}
+
+model User {
+  id          String   @id @default(uuid())
+  name        String
+  email       String   @unique
+  password    String   // Hashed
+  role        Role     @default(student)
+  department  String?
+  avatar      String?
+  gpa         Float?
+  major       String?
+  year        Int?
+  permissions String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  authoredCourses Course[]     @relation("InstructorCourses")
+  enrollments     Enrollment[]
+}
+
+model Course {
+  id           String   @id // e.g., CS-402
+  title        String
+  description  String?
+  instructorId String
+  instructor   User     @relation("InstructorCourses", fields: [instructorId], references: [id])
+  department   String
+  code         String   @unique
+  maxStudents  Int?
+  credits      Int?
+  image        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  enrollments Enrollment[]
+}
+
+model Enrollment {
+  id          String   @id @default(uuid())
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  role        String   // student, instructor, ta
+  status      String   // active, completed, dropped
+  enrolledAt  DateTime @default(now())
+  completedAt DateTime?
+
+  @@unique([courseId, userId])
+}
